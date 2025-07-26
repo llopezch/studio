@@ -1,5 +1,4 @@
-import { ArrowDownUp, BarChart, CalendarDays, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowDownUp, BarChart, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
