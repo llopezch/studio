@@ -12,13 +12,25 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'placehold.co',
+        hostname: 'upload.wikimedia.org',
         port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'upload.wikimedia.org',
+        hostname: 'www.interbank.pe',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.scotiabank.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.bn.com.pe',
         port: '',
         pathname: '/**',
       }
