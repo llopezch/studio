@@ -74,10 +74,10 @@ export function ExchangeRateCalendar() {
           <div key={day} className="p-1">
             <div className={cn(
               "flex flex-col items-center justify-center h-16 rounded-md border text-sm",
-              rateType === 'buy' ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+              rateType === 'buy' ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/20"
             )}>
               <div className="font-semibold">{day}</div>
-              <div className={cn("text-xs", rateType === 'buy' ? "text-green-700" : "text-red-700")}>
+              <div className={cn("text-xs", rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive")}>
                 {mockRates[day][rateType]}
               </div>
             </div>

@@ -35,7 +35,7 @@ function RateChange({ value }: { value: number }) {
   return (
     <div className={cn(
       "flex items-center text-xs",
-      isPositive ? "text-green-600" : "text-red-600"
+      isPositive ? "text-green-600" : "text-destructive"
     )}>
       {isPositive ? '+' : ''}{value.toFixed(4)}
     </div>
@@ -56,7 +56,7 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
         <div className="flex gap-6 text-right">
           <div>
             <div className="text-sm text-muted-foreground">Compra</div>
-            <div className="font-bold text-lg text-red-600">{buy.toFixed(3)}</div>
+            <div className="font-bold text-lg text-destructive">{buy.toFixed(3)}</div>
             <RateChange value={buyChange} />
           </div>
           <div>
