@@ -19,11 +19,11 @@ async function getExchangeRate() {
 }
 
 const banksData = [
-  { name: 'Interbank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Interbank_logo.svg/2560px-Interbank_logo.svg.png', buy: 3.750, sell: 3.765, buyChange: -0.012, sellChange: 0.005, date: '15/01/24 14:30' },
-  { name: 'BCP', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/BCP_logo.svg/2560px-BCP_logo.svg.png', buy: 3.745, sell: 3.770, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
-  { name: 'BBVA', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/BBVA_2019.svg/2560px-BBVA_2019.svg.png', buy: 3.748, sell: 3.768, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
-  { name: 'Scotiabank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Scotiabank_logo.svg/2560px-Scotiabank_logo.svg.png', buy: 3.752, sell: 3.772, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
-  { name: 'Banco de la Nación', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Banco_de_la_Naci%C3%B3n_logo.svg/2560px-Banco_de_la_Naci%C3%B3n_logo.svg.png', buy: 3.755, sell: 3.765, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
+  { name: 'Interbank', buy: 3.750, sell: 3.765, buyChange: -0.012, sellChange: 0.005, date: '15/01/24 14:30' },
+  { name: 'BCP', buy: 3.745, sell: 3.770, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
+  { name: 'BBVA', buy: 3.748, sell: 3.768, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
+  { name: 'Scotiabank', buy: 3.752, sell: 3.772, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
+  { name: 'Banco de la Nación', buy: 3.755, sell: 3.765, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
 ];
 
 export default async function Home() {
@@ -97,7 +97,7 @@ export default async function Home() {
             <h2 className="text-2xl font-bold mb-4">Tipos de Cambio por Banco</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {banksData.map((bank) => (
-                <BankRateCard key={bank.name} {...bank} />
+                <BankRateCard key={bank.name} name={bank.name} date={bank.date} buy={bank.buy} sell={bank.sell} buyChange={bank.buyChange} sellChange={bank.sellChange} />
               ))}
             </div>
           </section>
