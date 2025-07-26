@@ -1,6 +1,6 @@
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { BankLogo } from './bank-logo';
 
 interface BankRateCardProps {
   name: string;
@@ -9,6 +9,7 @@ interface BankRateCardProps {
   sell: number;
   buyChange: number;
   sellChange: number;
+  logoUrl: string;
 }
 
 function RateChange({ value }: { value: number }) {
@@ -23,12 +24,14 @@ function RateChange({ value }: { value: number }) {
   )
 }
 
-export function BankRateCard({ name, date, buy, sell, buyChange, sellChange }: BankRateCardProps) {
+export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, logoUrl }: BankRateCardProps) {
   return (
     <Card>
       <CardContent className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <BankLogo name={name} />
+          <div className="w-24 h-10 flex items-center justify-center">
+            <Image src={logoUrl} alt={`${name} logo`} width={120} height={40} className="object-contain w-auto h-7" />
+          </div>
           <div>
             <div className="font-bold">{name}</div>
             <div className="text-xs text-muted-foreground">{date}</div>
