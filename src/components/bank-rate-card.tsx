@@ -46,12 +46,12 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
         <div className="flex gap-6 text-right">
           <div>
             <div className="text-sm text-muted-foreground">Compra</div>
-            <div className="font-bold text-lg text-destructive">{buy.toFixed(3)}</div>
+            <div className="font-bold text-lg">{buy.toFixed(3)}</div>
             <RateChange value={buyChange} />
           </div>
           <div>
             <div className="text-sm text-muted-foreground">Venta</div>
-            <div className="font-bold text-lg text-green-600">{sell.toFixed(3)}</div>
+            <div className="font-bold text-lg">{sell.toFixed(3)}</div>
             <RateChange value={sellChange} />
           </div>
         </div>
