@@ -52,10 +52,10 @@ const ChartComponent = ({ data }: { data: any[] }) => (
                     </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} />
-                <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} domain={['dataMin - 0.02', 'dataMax + 0.02']} />
+                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} domain={['dataMin - 0.02', 'dataMax + 0.02']} axisLine={false} tickLine={false} />
                 <Tooltip
-                    cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2, strokeDasharray: '3 3' }}
+                    cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
                     content={<CustomTooltip />}
                 />
                 <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" activeDot={{ r: 8 }}/>
