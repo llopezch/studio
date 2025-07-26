@@ -19,11 +19,11 @@ async function getExchangeRate() {
 }
 
 const banksData = [
-  { name: 'Interbank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Interbank_logo.svg/1280px-Interbank_logo.svg.png', buy: 3.750, sell: 3.765, buyChange: -0.012, sellChange: 0.005, date: '15/01/24 14:30' },
-  { name: 'BCP', logo: 'https://seeklogo.com/images/B/banco-de-credito-del-peru-bcp-logo-4532986A8C-seeklogo.com.png', buy: 3.745, sell: 3.770, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
-  { name: 'BBVA', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/BBVA_logo_%282019%29.svg/1280px-BBVA_logo_%282019%29.svg.png', buy: 3.748, sell: 3.768, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
-  { name: 'Scotiabank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Scotiabank_logo.svg/1280px-Scotiabank_logo.svg.png', buy: 3.752, sell: 3.772, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
-  { name: 'Banco de la Nación', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Logo_del_Banco_de_la_Naci%C3%B3n.svg/2560px-Logo_del_Banco_de_la_Naci%C3%B3n.svg.png', buy: 3.755, sell: 3.765, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
+  { name: 'Interbank', logo: 'https://www.interbank.pe/logo-interbank.svg', buy: 3.750, sell: 3.765, buyChange: -0.012, sellChange: 0.005, date: '15/01/24 14:30' },
+  { name: 'BCP', logo: 'https://www.viabcp.com/wcm/connect/9128c773-a64f-4a00-9a21-9533a1e29202/logo-bcp.svg?MOD=AJPERES&CACHEID=ROOTWORKSPACE-9128c773-a64f-4a00-9a21-9533a1e29202-o1gA34w', buy: 3.745, sell: 3.770, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
+  { name: 'BBVA', logo: 'https://www.bbva.pe/content/dam/public-web/peru/images/logos/logo_bbva_blanco.svg', buy: 3.748, sell: 3.768, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
+  { name: 'Scotiabank', logo: 'https://www.scotiabank.com.pe/scotiabank-peru/assets/scotiabank-logo-red.svg', buy: 3.752, sell: 3.772, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
+  { name: 'Banco de la Nación', logo: 'https://www.bn.com.pe/dist/img/logo-bn.png', buy: 3.755, sell: 3.765, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
 ];
 
 export default async function Home() {
