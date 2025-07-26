@@ -8,7 +8,7 @@ import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
 
 const banksData = [
   { name: 'Interbank', buy: 3.510, sell: 3.605, buyChange: -0.019, sellChange: -0.005, date: '15/01/24 14:30', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Interbank_logo.svg/320px-Interbank_logo.svg.png' },
-  { name: 'BCP', buy: 3.505, sell: 3.610, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/BCP_logo.svg/2560px-BCP_logo.svg.png' },
+  { name: 'BCP', buy: 3.505, sell: 3.610, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Logo_del_Banco_de_Cr%C3%A9dito_del_Per%C3%BA.svg/320px-Logo_del_Banco_de_Cr%C3%A9dito_del_Per%C3%BA.svg.png' },
   { name: 'BBVA', buy: 3.508, sell: 3.608, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/BBVA_2019.svg/2560px-BBVA_2019.svg.png' },
   { name: 'Scotiabank', buy: 3.512, sell: 3.612, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Scotiabank_logo.svg/2560px-Scotiabank_logo.svg.png' },
   { name: 'Banco de la Nación', buy: 3.515, sell: 3.615, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Banco_de_la_Naci%C3%B3n_logo.svg/2560px-Banco_de_la_Naci%C3%B3n_logo.svg.png' },
