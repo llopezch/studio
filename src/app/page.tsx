@@ -5,29 +5,15 @@ import { BankRateCard } from '@/components/bank-rate-card';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
 
-async function getExchangeRate() {
-  const mockData = {
-    result: 'success',
-    time_last_update_unix: Math.floor(Date.now() / 1000) - 3600,
-    base_code: 'USD',
-    conversion_rates: {
-      PEN: 3.758,
-    },
-  };
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return mockData;
-}
-
 const banksData = [
-  { name: 'Interbank', buy: 3.750, sell: 3.765, buyChange: -0.012, sellChange: 0.005, date: '15/01/24 14:30' },
-  { name: 'BCP', buy: 3.745, sell: 3.770, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
-  { name: 'BBVA', buy: 3.748, sell: 3.768, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
-  { name: 'Scotiabank', buy: 3.752, sell: 3.772, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
-  { name: 'Banco de la Nación', buy: 3.755, sell: 3.765, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
+  { name: 'Interbank', buy: 3.510, sell: 3.605, buyChange: -0.019, sellChange: -0.005, date: '15/01/24 14:30' },
+  { name: 'BCP', buy: 3.505, sell: 3.610, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
+  { name: 'BBVA', buy: 3.508, sell: 3.608, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
+  { name: 'Scotiabank', buy: 3.512, sell: 3.612, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
+  { name: 'Banco de la Nación', buy: 3.515, sell: 3.615, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
 ];
 
 export default async function Home() {
-  const data = await getExchangeRate();
   const bestBuy = Math.max(...banksData.map(b => b.buy));
   const bestSell = Math.min(...banksData.map(b => b.sell));
   const avgBuy = (banksData.reduce((sum, b) => sum + b.buy, 0) / banksData.length).toFixed(3);
@@ -126,5 +112,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    

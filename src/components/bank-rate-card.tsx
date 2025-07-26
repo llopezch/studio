@@ -107,5 +107,3 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange }: B
     </Card>
   );
 }
-
-    
