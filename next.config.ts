@@ -12,10 +12,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'upload.wikimedia.org',
-      },
-      {
-        protocol: 'https',
         hostname: 's3-ced-uploads-01.s3.amazonaws.com',
       }
     ],
