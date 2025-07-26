@@ -44,13 +44,13 @@ export function ExchangeRateChart() {
                 <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip
-                    cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 2 }}
+                    cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 3 }}
                     contentStyle={{
                         backgroundColor: 'hsl(var(--background))',
                         borderColor: 'hsl(var(--border))'
                     }}
                 />
-                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} activeDot={{ r: 8 }}/>
             </LineChart>
             </ResponsiveContainer>
         </div>
@@ -63,13 +63,13 @@ export function ExchangeRateChart() {
                 <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false}/>
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false}/>
                  <Tooltip
-                    cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 2 }}
+                    cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 3 }}
                     contentStyle={{
                         backgroundColor: 'hsl(var(--background))',
                         borderColor: 'hsl(var(--border))'
                     }}
                 />
-                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} activeDot={{ r: 8 }}/>
             </LineChart>
             </ResponsiveContainer>
         </div>
