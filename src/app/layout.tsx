@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'SolValor - Tipo de Cambio Dólar a Sol',
-  description: 'Consulta el tipo de cambio del dólar a sol peruano. Precio de compra y venta actualizado.',
+  title: 'SolValor - Panel de Tipos de Cambio',
+  description: 'Panel de monitoreo en tiempo real del tipo de cambio del dólar a sol peruano.',
 };
 
 export default function RootLayout({
