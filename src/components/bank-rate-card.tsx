@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
-const BankLogo = ({ name, logoUrl }: { name: string, logoUrl: string }) => {
+const BankLogo = ({ name, logoUrl, "data-ai-hint": dataAiHint }: { name: string, logoUrl: string, "data-ai-hint"?: string }) => {
   return (
     <div className="w-24 h-10 flex items-center justify-center">
       <Image
@@ -12,6 +12,7 @@ const BankLogo = ({ name, logoUrl }: { name: string, logoUrl: string }) => {
         width={100}
         height={28}
         className="object-contain w-full h-full"
+        data-ai-hint={dataAiHint}
       />
     </div>
   );
@@ -26,6 +27,7 @@ interface BankRateCardProps {
   buyChange: number;
   sellChange: number;
   logoUrl: string;
+  "data-ai-hint"?: string;
 }
 
 function RateChange({ value }: { value: number }) {
@@ -40,12 +42,12 @@ function RateChange({ value }: { value: number }) {
   )
 }
 
-export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, logoUrl }: BankRateCardProps) {
+export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, logoUrl, "data-ai-hint": dataAiHint }: BankRateCardProps) {
   return (
     <Card>
       <CardContent className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <BankLogo name={name} logoUrl={logoUrl} />
+          <BankLogo name={name} logoUrl={logoUrl} data-ai-hint={dataAiHint} />
           <div>
             <div className="font-bold">{name}</div>
             <div className="text-xs text-muted-foreground">{date}</div>
