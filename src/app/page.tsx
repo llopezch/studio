@@ -19,11 +19,11 @@ async function getExchangeRate() {
 }
 
 const banksData = [
-  { name: 'Interbank', logo: 'https://www.interbank.pe/logo-interbank.svg', buy: 3.750, sell: 3.765, buyChange: -0.012, sellChange: 0.005, date: '15/01/24 14:30' },
-  { name: 'BCP', logo: 'https://www.viabcp.com/wcm/connect/9128c773-a64f-4a00-9a21-9533a1e29202/logo-bcp.svg?MOD=AJPERES&CACHEID=ROOTWORKSPACE-9128c773-a64f-4a00-9a21-9533a1e29202-o1gA34w', buy: 3.745, sell: 3.770, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
-  { name: 'BBVA', logo: 'https://www.bbva.pe/content/dam/public-web/peru/images/logos/logo_bbva_blanco.svg', buy: 3.748, sell: 3.768, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
-  { name: 'Scotiabank', logo: 'https://www.scotiabank.com.pe/scotiabank-peru/assets/scotiabank-logo-red.svg', buy: 3.752, sell: 3.772, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
-  { name: 'Banco de la Nación', logo: 'https://www.bn.com.pe/dist/img/logo-bn.png', buy: 3.755, sell: 3.765, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
+  { name: 'Interbank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Interbank_logo.svg/1200px-Interbank_logo.svg.png', buy: 3.750, sell: 3.765, buyChange: -0.012, sellChange: 0.005, date: '15/01/24 14:30' },
+  { name: 'BCP', logo: 'https://seeklogo.com/images/B/banco-de-credito-del-peru-bcp-logo-35651B5F64-seeklogo.com.png', buy: 3.745, sell: 3.770, buyChange: -0.017, sellChange: 0.002, date: '15/01/24 14:25' },
+  { name: 'BBVA', logo: 'https://seeklogo.com/images/B/bbva-logo-C0949F4F82-seeklogo.com.png', buy: 3.748, sell: 3.768, buyChange: 0.002, sellChange: 0.001, date: '15/01/24 14:35' },
+  { name: 'Scotiabank', logo: 'https://seeklogo.com/images/S/scotiabank-logo-F9634FE1A9-seeklogo.com.png', buy: 3.752, sell: 3.772, buyChange: 0.008, sellChange: -0.004, date: '15/01/24 14:20' },
+  { name: 'Banco de la Nación', logo: 'https://seeklogo.com/images/B/banco-de-la-nacion-peru-logo-ED13426442-seeklogo.com.png', buy: 3.755, sell: 3.765, buyChange: -0.010, sellChange: -0.013, date: '15/01/24 14:28' },
 ];
 
 export default async function Home() {
