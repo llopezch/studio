@@ -27,7 +27,7 @@ function RateChange({ value }: { value: number }) {
 export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, logoUrl }: BankRateCardProps) {
   return (
     <Card>
-      <CardContent className="p-4 flex items-center justify-between">
+      <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-24 h-10 relative flex items-center justify-center">
             <Image 
@@ -43,7 +43,7 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
             <div className="text-xs text-muted-foreground">{date}</div>
           </div>
         </div>
-        <div className="flex gap-6 text-right">
+        <div className="flex gap-6 text-left sm:text-right w-full sm:w-auto justify-around sm:justify-end">
           <div>
             <div className="text-sm text-muted-foreground">Compra</div>
             <div className="font-bold text-lg">{buy.toFixed(3)}</div>
