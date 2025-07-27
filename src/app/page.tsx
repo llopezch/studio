@@ -98,7 +98,7 @@ export default async function Home() {
               </Card>
             </div>
             <div>
-              <h2 className="text-2xl font-bold mb-4">Calendario de Tipos de Cambio</h2>
+              <h2 className="text-2xl font-bold mb-4">Tipo de Cambio - SUNAT</h2>
               <Card>
                 <CardContent className="p-2">
                   <ExchangeRateCalendar />
