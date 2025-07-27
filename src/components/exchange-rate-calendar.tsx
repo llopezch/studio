@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,9 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
-const days = Array.from({ length: 31 }, (_, i) => i + 1)
-
-const mockRates = days.reduce((acc, day) => {
+const mockRates = Array.from({ length: 31 }, (_, i) => i + 1).reduce((acc, day) => {
   acc[day] = {
     buy: (3.75 + (Math.random() - 0.5) * 0.1).toFixed(3),
     sell: (3.78 + (Math.random() - 0.5) * 0.1).toFixed(3),
@@ -20,19 +19,24 @@ const mockRates = days.reduce((acc, day) => {
 
 
 export function ExchangeRateCalendar() {
-  const [date, setDate] = React.useState(new Date(2025, 6, 1))
+  const [displayDate, setDisplayDate] = React.useState(new Date())
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
+  
+  const today = new Date();
 
-  const monthName = date.toLocaleString('es-PE', { month: 'long' });
-  const year = date.getFullYear();
+  const monthName = displayDate.toLocaleString('es-PE', { month: 'long' });
+  const year = displayDate.getFullYear();
 
   const handlePrevMonth = () => {
-    setDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+    setDisplayDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
   }
 
   const handleNextMonth = () => {
-    setDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+    setDisplayDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }
+
+  const daysInMonth = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
     <div className="p-2">
@@ -68,21 +72,27 @@ export function ExchangeRateCalendar() {
       </div>
       <div className="grid grid-cols-7 mt-2">
         {/* Placeholder for empty days */}
-        {Array.from({ length: new Date(date.getFullYear(), date.getMonth(), 1).getDay() }).map((_, i) => <div key={`empty-${i}`} />)}
+        {Array.from({ length: new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay() }).map((_, i) => <div key={`empty-${i}`} />)}
         
-        {days.map((day) => (
-          <div key={day} className="p-1">
-            <div className={cn(
-              "flex flex-col items-center justify-center h-16 rounded-md border text-sm",
-              rateType === 'buy' ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/20"
-            )}>
-              <div className="font-semibold">{day}</div>
-              <div className={cn("text-xs", rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive")}>
-                {mockRates[day][rateType]}
+        {days.map((day) => {
+          const isToday = today.getFullYear() === displayDate.getFullYear() &&
+                          today.getMonth() === displayDate.getMonth() &&
+                          today.getDate() === day;
+          return (
+            <div key={day} className="p-1">
+              <div className={cn(
+                "flex flex-col items-center justify-center h-16 rounded-md border text-sm relative",
+                rateType === 'buy' ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/20",
+                isToday && "ring-2 ring-primary"
+              )}>
+                <div className="font-semibold">{day}</div>
+                <div className={cn("text-xs", rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive")}>
+                  {mockRates[day][rateType]}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
