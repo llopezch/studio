@@ -1,3 +1,4 @@
+
 import { ArrowDownUp, BarChart, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +41,7 @@ export default async function Home() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Mejor Compra</CardTitle>
-                <TrendingUp className="h-6 w-6 text-green-600" />
+                <TrendingUp className="h-8 w-8 text-green-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">S/{bestBuy.toFixed(3)}</div>
@@ -50,7 +51,7 @@ export default async function Home() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Mejor Venta</CardTitle>
-                <TrendingDown className="h-6 w-6 text-destructive" />
+                <TrendingDown className="h-8 w-8 text-destructive" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">S/{bestSell.toFixed(3)}</div>
@@ -60,7 +61,7 @@ export default async function Home() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Promedio Compra</CardTitle>
-                <BarChart className="h-6 w-6 text-muted-foreground" />
+                <BarChart className="h-8 w-8 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">S/{avgBuy}</div>
@@ -70,7 +71,7 @@ export default async function Home() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Diferencia</CardTitle>
-                <ArrowDownUp className="h-6 w-6 text-muted-foreground" />
+                <ArrowDownUp className="h-8 w-8 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">S/{difference}</div>
