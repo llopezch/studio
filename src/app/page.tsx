@@ -28,7 +28,7 @@ export default async function Home() {
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-primary">Panel de Tipos de Cambio</h1>
-            <p className="text-muted-foreground flex items-center gap-2">Monitoreo en tiempo real del Dólar <CircleDollarSign className="h-4 w-4" /></p>
+            <p className="text-muted-foreground flex items-center gap-2">Monitoreo en tiempo real del Dólar <CircleDollarSign className="h-5 w-5" /></p>
           </div>
           <Button variant="outline">
             <RefreshCw className="mr-2" />
