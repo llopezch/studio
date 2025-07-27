@@ -1,5 +1,5 @@
 
-import { ArrowDownUp, BarChart, CircleDollarSign, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
@@ -28,7 +28,11 @@ export default async function Home() {
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-primary">Panel de Tipos de Cambio</h1>
-            <p className="text-muted-foreground flex items-center gap-2">Monitoreo en tiempo real del Dólar <CircleDollarSign className="h-5 w-5" /></p>
+            <div className="flex items-center text-sm text-muted-foreground mt-1">
+              <span>INICIO</span>
+              <ChevronRight className="h-4 w-4 mx-1" />
+              <span className="font-semibold text-foreground">PEN / USD • MONEDA</span>
+            </div>
           </div>
           <Button variant="outline">
             <RefreshCw className="mr-2" />
