@@ -39,43 +39,43 @@ export default async function Home() {
         <main className="space-y-8">
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Mejor Compra</CardTitle>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Mejor Compra</p>
+                  <div className="text-2xl font-bold">S/{bestBuy.toFixed(3)}</div>
+                  <p className="text-xs text-muted-foreground">{bestBuyBank}</p>
+                </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">S/{bestBuy.toFixed(3)}</div>
-                <p className="text-xs text-muted-foreground">{bestBuyBank}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Mejor Venta</CardTitle>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Mejor Venta</p>
+                  <div className="text-2xl font-bold">S/{bestSell.toFixed(3)}</div>
+                  <p className="text-xs text-muted-foreground">{bestSellBank}</p>
+                </div>
                 <TrendingDown className="h-8 w-8 text-destructive" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">S/{bestSell.toFixed(3)}</div>
-                <p className="text-xs text-muted-foreground">{bestSellBank}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Promedio Compra</CardTitle>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Promedio Compra</p>
+                  <div className="text-2xl font-bold">S/{avgBuy}</div>
+                  <p className="text-xs text-muted-foreground">Entre {banksData.length} bancos</p>
+                </div>
                 <BarChart className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">S/{avgBuy}</div>
-                <p className="text-xs text-muted-foreground">Entre {banksData.length} bancos</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Diferencia</CardTitle>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Diferencia</p>
+                  <div className="text-2xl font-bold">S/{difference}</div>
+                  <p className="text-xs text-muted-foreground">Entre bancos</p>
+                </div>
                 <ArrowDownUp className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">S/{difference}</div>
-                <p className="text-xs text-muted-foreground">Entre bancos</p>
               </CardContent>
             </Card>
           </section>
