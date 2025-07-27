@@ -12,22 +12,23 @@ import {
 } from "recharts"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const weeklyData = [
-  { date: "19 Jul", value: 3.715 },
-  { date: "20 Jul", value: 3.705 },
-  { date: "21 Jul", value: 3.710 },
-  { date: "22 Jul", value: 3.690 },
-  { date: "23 Jul", value: 3.725 },
-  { date: "24 Jul", value: 3.740 },
-  { date: "25 Jul", value: 3.765 },
-];
+const weeklyData = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return {
+        date: d.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' }).replace('.', ''),
+        value: parseFloat((3.725 + (Math.random() - 0.5) * 0.05).toFixed(4))
+    };
+});
 
-const monthlyData = [
-    { date: 'Sem 1', value: 3.72 },
-    { date: 'Sem 2', value: 3.75 },
-    { date: 'Sem 3', value: 3.71 },
-    { date: 'Sem 4', value: 3.78 },
-];
+const monthlyData = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (29 - i));
+    return {
+        date: d.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' }).replace('.', ''),
+        value: parseFloat((3.75 + (Math.random() - 0.5) * 0.1).toFixed(4))
+    };
+});
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -53,13 +54,26 @@ const ChartComponent = ({ data }: { data: any[] }) => (
                     </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} domain={['dataMin - 0.02', 'dataMax + 0.02']} axisLine={false} tickLine={false} />
+                <XAxis 
+                    dataKey="date" 
+                    stroke="hsl(var(--muted-foreground))" 
+                    tick={{ fontSize: 12 }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    interval={data.length > 7 ? 6 : 1}
+                />
+                <YAxis 
+                    stroke="hsl(var(--muted-foreground))" 
+                    tick={{ fontSize: 12 }} 
+                    domain={['dataMin - 0.02', 'dataMax + 0.02']} 
+                    axisLine={false} 
+                    tickLine={false} 
+                />
                 <Tooltip
-                    cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
+                    cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
                     content={<CustomTooltip />}
                 />
-                <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" activeDot={{ r: 8 }}/>
+                <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" activeDot={{ r: 6 }}/>
             </AreaChart>
         </ResponsiveContainer>
     </div>
