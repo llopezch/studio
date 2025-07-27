@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -68,9 +69,9 @@ const ChartComponent = ({ data }: { data: any[] }) => (
 export function ExchangeRateChart() {
   return (
     <Tabs defaultValue="week">
-      <TabsList className="grid w-full grid-cols-2 md:w-[200px]">
-        <TabsTrigger value="week">Última Semana</TabsTrigger>
-        <TabsTrigger value="month">Último Mes</TabsTrigger>
+      <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b">
+        <TabsTrigger value="week" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Última Semana</TabsTrigger>
+        <TabsTrigger value="month" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Último Mes</TabsTrigger>
       </TabsList>
       <TabsContent value="week">
         <ChartComponent data={weeklyData} />
