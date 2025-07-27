@@ -19,7 +19,7 @@ function RateChange({ value }: { value: number }) {
       "flex items-center text-xs",
       isPositive ? "text-green-600" : "text-destructive"
     )}>
-      {isPositive ? '+' : ''}{value.toFixed(4)}
+      {isPositive ? '+' : ''}{(value || 0).toFixed(4)}
     </div>
   )
 }

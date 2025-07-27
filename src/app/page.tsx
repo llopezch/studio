@@ -1,20 +1,21 @@
 
-import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowDownUp, BarChart, CircleDollarSign, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
+import { supabase } from '@/lib/supabase';
 
-const banksData = [
-    { name: 'Interbank', buy: 3.510, sell: 3.605, buyChange: -0.019, sellChange: -0.005, date: '15/01/24', logoUrl: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg' },
-    { name: 'BCP', buy: 3.505, sell: 3.610, buyChange: -0.017, sellChange: 0.002, date: '15/01/24', logoUrl: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg' },
-    { name: 'BBVA', buy: 3.508, sell: 3.608, buyChange: 0.002, sellChange: 0.001, date: '15/01/24', logoUrl: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460305-bbva.svg' },
-    { name: 'Scotiabank', buy: 3.512, sell: 3.612, buyChange: 0.008, sellChange: -0.004, date: '15/01/24', logoUrl: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg' },
-    { name: 'Banco de la Nación', buy: 3.515, sell: 3.615, buyChange: -0.010, sellChange: -0.013, date: '15/01/24', logoUrl: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg' },
-];
 
 export default async function Home() {
+
+  const { data: banksData, error } = await supabase.from('banks').select('*');
+
+  if (error || !banksData || banksData.length === 0) {
+    return <div className="container mx-auto p-8">Error al cargar los datos. Por favor, revisa la conexión con Supabase y asegúrate de que la tabla 'banks' exista y tenga datos.</div>
+  }
+
   const bestBuy = Math.max(...banksData.map(b => b.buy));
   const bestSell = Math.min(...banksData.map(b => b.sell));
   const avgBuy = (banksData.reduce((sum, b) => sum + b.buy, 0) / banksData.length).toFixed(3);
@@ -88,7 +89,7 @@ export default async function Home() {
             <h2 className="text-2xl font-bold mb-4">Tipos de Cambio por Banco</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {banksData.map((bank) => (
-                <BankRateCard key={bank.name} name={bank.name} date={bank.date} buy={bank.buy} sell={bank.sell} buyChange={bank.buyChange} sellChange={bank.sellChange} logoUrl={bank.logoUrl} />
+                <BankRateCard key={bank.name} name={bank.name} date={new Date(bank.created_at).toLocaleDateString('es-PE')} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
               ))}
             </div>
           </section>
