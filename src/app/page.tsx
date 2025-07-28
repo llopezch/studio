@@ -5,17 +5,52 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
-import { supabase } from '@/lib/supabase';
 
-
-export default async function Home() {
-
-  const { data: banksData, error } = await supabase.from('banks').select('*');
-
-  if (error || !banksData || banksData.length === 0) {
-    return <div className="container mx-auto p-8">Error al cargar los datos. Por favor, revisa la conexión con Supabase y asegúrate de que la tabla 'banks' exista y tenga datos.</div>
+const banksData = [
+  {
+    name: 'BCP',
+    date: '10/07/2024',
+    buy: 3.785,
+    sell: 3.825,
+    buy_change: 0.002,
+    sell_change: -0.001,
+    logo_url: 'https://play-lh.googleusercontent.com/s_7-Me_t1QSoSJoV425n5nsI3dBA9j906Vv52gLzyzJ4Z4u_t6Ee0M216W7S_2S_Hig=w240-h480-rw',
+    created_at: new Date().toISOString()
+  },
+  {
+    name: 'Interbank',
+    date: '10/07/2024',
+    buy: 3.780,
+    sell: 3.830,
+    buy_change: -0.001,
+    sell_change: 0.003,
+    logo_url: 'https://play-lh.googleusercontent.com/4l_bV_4P12aO12NfIeCCQe2G5L-7-yI2jner_J0240J0s82Sj0cz4M0x_2_p_A7-XmE=w240-h480-rw',
+    created_at: new Date().toISOString()
+  },
+  {
+    name: 'BBVA',
+    date: '10/07/2024',
+    buy: 3.790,
+    sell: 3.820,
+    buy_change: 0.003,
+    sell_change: -0.002,
+    logo_url: 'https://play-lh.googleusercontent.com/mG-971i9cW2u26P1Rxm_T5_V-owj242Jazr52_f50O9n-yGk2g4xI0e-g_22lSlwse8=w240-h480-rw',
+    created_at: new Date().toISOString()
+  },
+    {
+    name: 'Scotiabank',
+    date: '10/07/2024',
+    buy: 3.775,
+    sell: 3.835,
+    buy_change: 0.001,
+    sell_change: 0.001,
+    logo_url: 'https://play-lh.googleusercontent.com/7I-scqC2Unu6U8-y45K-b2jIt0qg-4eQ3vB7qjGih0i28T2iP-p9K5vLh3e00-aO_GE=w240-h480-rw',
+    created_at: new Date().toISOString()
   }
+];
 
+
+export default function Home() {
   const bestBuy = Math.max(...banksData.map(b => b.buy));
   const bestSell = Math.min(...banksData.map(b => b.sell));
   const avgBuy = (banksData.reduce((sum, b) => sum + b.buy, 0) / banksData.length).toFixed(3);
