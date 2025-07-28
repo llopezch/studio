@@ -14,7 +14,7 @@ const banksData = [
     sell: 3.825,
     buy_change: 0.002,
     sell_change: -0.001,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460293-bcp.svg',
+    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg',
     created_at: new Date().toISOString()
   },
   {
@@ -24,7 +24,7 @@ const banksData = [
     sell: 3.830,
     buy_change: -0.001,
     sell_change: 0.003,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460301-interbank.svg',
+    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg',
     created_at: new Date().toISOString()
   },
   {
@@ -44,7 +44,7 @@ const banksData = [
     sell: 3.835,
     buy_change: 0.001,
     sell_change: 0.001,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460308-scotiabank.svg',
+    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg',
     created_at: new Date().toISOString()
   },
   {
@@ -54,7 +54,7 @@ const banksData = [
     sell: 3.840,
     buy_change: 0.000,
     sell_change: 0.000,
-    logo_url: 'https://placehold.co/128x39.png',
+    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg',
     created_at: new Date().toISOString()
   }
 ];
