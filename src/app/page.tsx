@@ -46,6 +46,16 @@ const banksData = [
     sell_change: 0.001,
     logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460308-scotiabank.svg',
     created_at: new Date().toISOString()
+  },
+  {
+    name: 'Banco de la Nación',
+    date: '10/07/2024',
+    buy: 3.770,
+    sell: 3.840,
+    buy_change: 0.000,
+    sell_change: 0.000,
+    logo_url: 'https://placehold.co/128x39.png',
+    created_at: new Date().toISOString()
   }
 ];
 
