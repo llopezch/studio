@@ -60,8 +60,8 @@ export default function Home() {
 
   return (
     <div className="bg-background text-foreground min-h-screen w-full">
-      <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="flex justify-between items-center mb-8">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-primary">Panel de Tipos de Cambio</h1>
             <div className="flex items-center text-sm text-muted-foreground mt-1">
@@ -70,7 +70,7 @@ export default function Home() {
               <span className="font-semibold text-foreground">PEN / USD • MONEDA</span>
             </div>
           </div>
-          <Button variant="outline">
+          <Button variant="outline" className="w-full sm:w-auto">
             <RefreshCw className="mr-2" />
             Actualizar
           </Button>
