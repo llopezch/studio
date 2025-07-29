@@ -34,6 +34,12 @@ interface SupabaseBankData {
   Venta: number;
 }
 
+interface SupabaseSunatData {
+  Fecha: string;
+  Compra: number;
+  Venta: number;
+}
+
 // Interface for data used in the components
 interface BankData {
   name: string;
@@ -45,22 +51,30 @@ interface BankData {
   logo_url: string;
 }
 
+interface SunatData {
+  [key: string]: {
+    buy: number;
+    sell: number;
+  }
+}
+
 export default async function Home() {
   const supabase = createClient();
   let banksData: BankData[] = [];
+  let sunatData: SunatData = {};
   let connectionError: { message: string } | null = null;
   let hasData = false;
 
   if (supabase) {
-    const { data, error } = await supabase
+    const { data: banksResult, error: banksError } = await supabase
       .from('BANCOS')
       .select('Banco, Fecha, Compra, Venta');
     
-    if (error) {
-      console.error("Supabase error:", error);
-      connectionError = { message: `Error al consultar la tabla 'BANCOS': ${error.message}` };
-    } else if (data && data.length > 0) {
-      const supabaseData = data as SupabaseBankData[];
+    if (banksError) {
+      console.error("Supabase error (BANCOS):", banksError);
+      connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}` };
+    } else if (banksResult && banksResult.length > 0) {
+      const supabaseData = banksResult as SupabaseBankData[];
       banksData = supabaseData.map(item => ({
         name: item.Banco,
         created_at: item.Fecha,
@@ -71,9 +85,29 @@ export default async function Home() {
         logo_url: logos[item.Banco.toUpperCase()] || 'https://placehold.co/128x32.png',
       }));
       hasData = true;
-    } else if (data && data.length === 0) {
+    } else if (banksResult && banksResult.length === 0) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
+
+    const { data: sunatResult, error: sunatError } = await supabase
+      .from('SUNAT')
+      .select('Fecha, Compra, Venta');
+    
+    if (sunatError) {
+        console.error("Supabase error (SUNAT):", sunatError);
+         if (!connectionError) {
+            connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
+        }
+    } else if (sunatResult) {
+        const supabaseSunatData = sunatResult as SupabaseSunatData[];
+        sunatData = supabaseSunatData.reduce((acc, item) => {
+            const date = new Date(item.Fecha + 'T00:00:00'); // Ensure date is parsed as local
+            const key = date.toISOString().split('T')[0]; // YYYY-MM-DD
+            acc[key] = { buy: item.Compra, sell: item.Venta };
+            return acc;
+        }, {} as SunatData);
+    }
+
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
   }
@@ -184,7 +218,7 @@ export default async function Home() {
               <h2 className="text-2xl font-bold mb-4">Tipo de Cambio - SUNAT</h2>
               <Card>
                 <CardContent className="p-2">
-                  <ExchangeRateCalendar />
+                  <ExchangeRateCalendar rates={sunatData} />
                 </CardContent>
               </Card>
             </div>
@@ -195,5 +229,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    

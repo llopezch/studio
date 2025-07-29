@@ -9,16 +9,18 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
-const mockRates = Array.from({ length: 31 }, (_, i) => i + 1).reduce((acc, day) => {
-  acc[day] = {
-    buy: (3.75 + (Math.random() - 0.5) * 0.1).toFixed(3),
-    sell: (3.78 + (Math.random() - 0.5) * 0.1).toFixed(3),
-  };
-  return acc;
-}, {} as Record<number, { buy: string, sell: string }>);
+interface SunatData {
+  [key: string]: {
+    buy: number;
+    sell: number;
+  }
+}
 
+interface ExchangeRateCalendarProps {
+  rates: SunatData;
+}
 
-export function ExchangeRateCalendar() {
+export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const [displayDate, setDisplayDate] = React.useState(new Date())
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
@@ -36,6 +38,7 @@ export function ExchangeRateCalendar() {
   }
 
   const daysInMonth = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
@@ -72,12 +75,30 @@ export function ExchangeRateCalendar() {
       </div>
       <div className="grid grid-cols-7 mt-2">
         {/* Placeholder for empty days */}
-        {Array.from({ length: new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay() }).map((_, i) => <div key={`empty-${i}`} />)}
+        {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} />)}
         
         {days.map((day) => {
+          const currentDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+          const dateKey = currentDate.toISOString().split('T')[0];
+          const rateData = rates[dateKey];
+
           const isToday = today.getFullYear() === displayDate.getFullYear() &&
                           today.getMonth() === displayDate.getMonth() &&
                           today.getDate() === day;
+          
+          if (!rateData) {
+            return (
+              <div key={day} className="p-1">
+                <div className={cn(
+                  "flex flex-col items-center justify-center h-16 rounded-md border border-dashed text-sm relative",
+                   isToday && "ring-2 ring-primary"
+                )}>
+                  <div className="font-semibold text-muted-foreground">{day}</div>
+                </div>
+              </div>
+            )
+          }
+
           return (
             <div key={day} className="p-1">
               <div className={cn(
@@ -87,7 +108,7 @@ export function ExchangeRateCalendar() {
               )}>
                 <div className="font-semibold">{day}</div>
                 <div className={cn("text-xs", rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive")}>
-                  {mockRates[day][rateType]}
+                  {rateData[rateType].toFixed(3)}
                 </div>
               </div>
             </div>
