@@ -1,4 +1,3 @@
-
 import { ArrowDownUp, BarChart, CircleDollarSign, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,19 +5,31 @@ import { BankRateCard } from '@/components/bank-rate-card';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
 import { createClient } from '@/lib/supabase';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
+
+const mockBanksData = [
+    { name: 'BCP', created_at: new Date().toISOString(), buy: 3.751, sell: 3.791, buy_change: 0.002, sell_change: -0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg' },
+    { name: 'Interbank', created_at: new Date().toISOString(), buy: 3.74, sell: 3.802, buy_change: -0.001, sell_change: 0.003, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg' },
+    { name: 'BBVA', created_at: new Date().toISOString(), buy: 3.745, sell: 3.795, buy_change: 0, sell_change: 0, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460305-bbva.svg' },
+    { name: 'Scotiabank', created_at: new Date().toISOString(), buy: 3.72, sell: 3.82, buy_change: 0.005, sell_change: -0.002, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg' },
+    { name: 'Banco de la Nación', created_at: new Date().toISOString(), buy: 3.73, sell: 3.78, buy_change: 0.001, sell_change: 0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg' },
+];
 
 export default async function Home() {
   const supabase = createClient();
-  const { data: banksData, error } = await supabase.from('banks').select('*').order('created_at', { ascending: false });
+  let banksData = mockBanksData;
+  let connectionError = null;
 
-  if (error) {
-    console.error("Error fetching data from Supabase:", error);
-    // Render an error message or a fallback UI
-    return <div>Error al cargar los datos. Por favor, intente más tarde.</div>;
-  }
-  
-  if (!banksData || banksData.length === 0) {
-    return <div>No hay datos disponibles.</div>
+  if (supabase) {
+    const { data, error } = await supabase.from('banks').select('*').order('created_at', { ascending: false });
+    if (error) {
+      connectionError = error;
+    } else if(data && data.length > 0) {
+      banksData = data;
+    }
+  } else {
+     connectionError = { message: "Supabase credentials are not configured. Falling back to mock data." };
   }
 
   const bestBuy = Math.max(...banksData.map(b => b.buy));
@@ -47,6 +58,16 @@ export default async function Home() {
         </header>
 
         <main className="space-y-8">
+          {connectionError && (
+            <Alert variant="destructive">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Error de Conexión</AlertTitle>
+              <AlertDescription>
+                No se pudo conectar con Supabase. Mostrando datos de ejemplo. Por favor, verifica tus credenciales en el archivo .env.local.
+                <p className="font-mono text-xs mt-2">{connectionError.message}</p>
+              </AlertDescription>
+            </Alert>
+          )}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardContent className="p-6 flex items-center justify-between">

@@ -5,7 +5,7 @@ export const createClient = () => {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase URL and anonymous key are required.')
+    return null;
   }
 
   return createSupabaseClient(supabaseUrl, supabaseKey)
