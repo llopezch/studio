@@ -1,3 +1,4 @@
+
 import { ArrowDownUp, BarChart, CircleDollarSign, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,17 +23,17 @@ export default async function Home() {
   let connectionError: { message: string } | null = null;
 
   if (supabase) {
-    const { data, error } = await supabase.from('banks').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('BANCOS').select('*').order('created_at', { ascending: false });
     
     if (error) {
       console.error("Supabase error:", error);
-      connectionError = { message: `Error al conectar con Supabase: ${error.message}` };
+      connectionError = { message: `Error al consultar la tabla 'BANCOS': ${error.message}` };
     } else if (data && data.length > 0) {
       banksData = data;
     } else if (data && data.length === 0) {
       // Connected successfully, but no data in the table
       banksData = []; // or you can keep mock data
-       connectionError = { message: "Conectado a Supabase, pero la tabla 'banks' está vacía. Mostrando datos de ejemplo." };
+       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
 
   } else {
