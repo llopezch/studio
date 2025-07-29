@@ -1,5 +1,5 @@
 
-import { ArrowDownUp, BarChart, CircleDollarSign, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
@@ -58,10 +58,17 @@ interface SunatData {
   }
 }
 
+interface ChartData {
+  date: string;
+  value: number;
+  fullDate: Date;
+}
+
 export default async function Home() {
   const supabase = createClient();
   let banksData: BankData[] = [];
   let sunatData: SunatData = {};
+  let chartData: ChartData[] = [];
   let connectionError: { message: string } | null = null;
   let hasData = false;
 
@@ -85,6 +92,28 @@ export default async function Home() {
         logo_url: logos[item.Banco.toUpperCase()] || 'https://placehold.co/128x32.png',
       }));
       hasData = true;
+
+      const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
+      supabaseData.forEach(item => {
+        const dateKey = item.Fecha;
+        const dateObj = new Date(item.Fecha + 'T00:00:00Z');
+        if (!dailyAverages[dateKey]) {
+          dailyAverages[dateKey] = { sum: 0, count: 0, dateObj };
+        }
+        dailyAverages[dateKey].sum += (item.Compra + item.Venta) / 2;
+        dailyAverages[dateKey].count++;
+      });
+      
+      chartData = Object.keys(dailyAverages).map(dateKey => {
+        const avg = dailyAverages[dateKey].sum / dailyAverages[dateKey].count;
+        const dateObj = dailyAverages[dateKey].dateObj;
+        return {
+          date: dateObj.toLocaleDateString('es-PE', { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('.', ''),
+          value: parseFloat(avg.toFixed(4)),
+          fullDate: dateObj,
+        }
+      }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+
     } else if (banksResult && banksResult.length === 0) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
@@ -101,11 +130,8 @@ export default async function Home() {
     } else if (sunatResult) {
         const supabaseSunatData = sunatResult as SupabaseSunatData[];
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            // The date from Supabase is 'YYYY-MM-DD'. We need to make sure it's treated as UTC.
-            const date = new Date(item.Fecha);
-            // By adding the timezone offset, we shift the date to be correct in the local time, but conceptually it is the UTC date we want.
-            // Then we get the YYYY-MM-DD part.
-            const dateKey = new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            const date = new Date(item.Fecha + 'T00:00:00Z');
+            const dateKey = date.toISOString().split('T')[0];
             acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             return acc;
         }, {} as SunatData);
@@ -119,6 +145,7 @@ export default async function Home() {
       banksData = mockBanksData;
   }
 
+  const latestBankData = banksData.length > 0 ? banksData[banksData.length -1] : null;
   const bestBuy = banksData.length > 0 ? Math.max(...banksData.map(b => b.buy)) : 0;
   const bestSell = banksData.length > 0 ? Math.min(...banksData.map(b => b.sell)) : 0;
   const avgBuy = banksData.length > 0 ? (banksData.reduce((sum, b) => sum + b.buy, 0) / banksData.length).toFixed(3) : '0.000';
@@ -201,7 +228,7 @@ export default async function Home() {
             <h2 className="text-2xl font-bold mb-4">Tipos de Cambio por Banco</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {banksData.length > 0 ? banksData.map((bank) => (
-                <BankRateCard key={bank.name} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
+                <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
               )) : (
                  <p className="text-muted-foreground col-span-full">No hay datos de bancos para mostrar.</p>
               )}
@@ -213,7 +240,7 @@ export default async function Home() {
                <h2 className="text-2xl font-bold mb-4">Evolución del Tipo de Cambio</h2>
               <Card>
                 <CardContent className="pt-6">
-                  <ExchangeRateChart />
+                  <ExchangeRateChart data={chartData} />
                 </CardContent>
               </Card>
             </div>
