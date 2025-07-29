@@ -101,8 +101,8 @@ export default async function Home() {
     } else if (sunatResult) {
         const supabaseSunatData = sunatResult as SupabaseSunatData[];
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            const date = new Date(item.Fecha + 'T00:00:00'); // Ensure date is parsed as local
-            const key = date.toISOString().split('T')[0]; // YYYY-MM-DD
+            // Supabase date columns return as 'YYYY-MM-DD'. This is what we want.
+            const key = item.Fecha;
             acc[key] = { buy: item.Compra, sell: item.Venta };
             return acc;
         }, {} as SunatData);
@@ -198,7 +198,7 @@ export default async function Home() {
             <h2 className="text-2xl font-bold mb-4">Tipos de Cambio por Banco</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {banksData.length > 0 ? banksData.map((bank) => (
-                <BankRateCard key={bank.name} name={bank.name} date={new Date(bank.created_at).toLocaleDateString('es-PE')} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
+                <BankRateCard key={bank.name} name={bank.name} date={new Date(bank.created_at + 'T00:00:00').toLocaleDateString('es-PE', { timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
               )) : (
                  <p className="text-muted-foreground col-span-full">No hay datos de bancos para mostrar.</p>
               )}

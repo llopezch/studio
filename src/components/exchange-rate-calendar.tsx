@@ -20,6 +20,15 @@ interface ExchangeRateCalendarProps {
   rates: SunatData;
 }
 
+// Helper to format a date to YYYY-MM-DD in local time
+function getLocalDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+
 export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const [displayDate, setDisplayDate] = React.useState(new Date())
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
@@ -80,7 +89,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
         
         {days.map((day) => {
           const currentDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
-          const dateKey = currentDate.toISOString().split('T')[0]; // Creates YYYY-MM-DD
+          const dateKey = getLocalDateKey(currentDate); // Creates YYYY-MM-DD
           const rateData = rates[dateKey];
           const isToday = today.getTime() === currentDate.getTime();
           
