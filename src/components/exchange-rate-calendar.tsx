@@ -34,7 +34,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayUTCKey = getUTCDateKey(today);
 
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
   const year = displayDate.getUTCFullYear();
@@ -90,9 +90,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
           const currentDate = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), day));
           const dateKey = getUTCDateKey(currentDate);
           const rateData = rates[dateKey];
-          const isToday = today.getFullYear() === currentDate.getUTCFullYear() &&
-                          today.getMonth() === currentDate.getUTCMonth() &&
-                          today.getDate() === currentDate.getUTCDate();
+          const isToday = dateKey === todayUTCKey;
           
           const hasData = !!rateData;
 

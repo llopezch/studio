@@ -102,10 +102,11 @@ export default async function Home() {
         const supabaseSunatData = sunatResult as SupabaseSunatData[];
         sunatData = supabaseSunatData.reduce((acc, item) => {
             // The date from Supabase is 'YYYY-MM-DD'. We need to make sure it's treated as UTC.
-            const date = new Date(`${item.Fecha}T00:00:00Z`);
-            // Format to YYYY-MM-DD to use as a reliable key
-            const key = date.toISOString().split('T')[0];
-            acc[key] = { buy: item.Compra, sell: item.Venta };
+            const date = new Date(item.Fecha);
+            // By adding the timezone offset, we shift the date to be correct in the local time, but conceptually it is the UTC date we want.
+            // Then we get the YYYY-MM-DD part.
+            const dateKey = new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             return acc;
         }, {} as SunatData);
     }
