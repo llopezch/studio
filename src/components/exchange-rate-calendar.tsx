@@ -25,6 +25,9 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
   const today = new Date();
+  // Set time to 00:00:00 to compare dates only
+  today.setHours(0, 0, 0, 0);
+
 
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long' });
   const year = displayDate.getFullYear();
@@ -82,9 +85,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
           const dateKey = currentDate.toISOString().split('T')[0];
           const rateData = rates[dateKey];
 
-          const isToday = today.getFullYear() === displayDate.getFullYear() &&
-                          today.getMonth() === displayDate.getMonth() &&
-                          today.getDate() === day;
+          const isToday = today.getTime() === currentDate.getTime();
           
           if (!rateData) {
             return (
@@ -107,7 +108,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
                 isToday && "ring-2 ring-primary"
               )}>
                 <div className="font-semibold">{day}</div>
-                <div className={cn("text-xs", rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive")}>
+                <div className={cn("text-xs font-bold", rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive")}>
                   {rateData[rateType].toFixed(3)}
                 </div>
               </div>
