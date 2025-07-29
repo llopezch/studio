@@ -17,27 +17,69 @@ const mockBanksData = [
     { name: 'Banco de la Nación', created_at: new Date().toISOString(), buy: 3.73, sell: 3.78, buy_change: 0.001, sell_change: 0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg' },
 ];
 
+const logos: Record<string, string> = {
+    'BCP': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg',
+    'INTERBANCARIO': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg',
+    'INTERBANK': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg',
+    'BBVA': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460305-bbva.svg',
+    'SCOTIABANK': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg',
+    'BANCO DE LA NACION': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg',
+};
+
+// Interface for data coming from Supabase
+interface SupabaseBankData {
+  Banco: string;
+  Fecha: string;
+  Compra: number;
+  Venta: number;
+}
+
+// Interface for data used in the components
+interface BankData {
+  name: string;
+  created_at: string;
+  buy: number;
+  sell: number;
+  buy_change: number;
+  sell_change: number;
+  logo_url: string;
+}
+
 export default async function Home() {
   const supabase = createClient();
-  let banksData = mockBanksData;
+  let banksData: BankData[] = [];
   let connectionError: { message: string } | null = null;
+  let hasData = false;
 
   if (supabase) {
-    const { data, error } = await supabase.from('BANCOS').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('BANCOS')
+      .select('Banco, Fecha, Compra, Venta');
     
     if (error) {
       console.error("Supabase error:", error);
       connectionError = { message: `Error al consultar la tabla 'BANCOS': ${error.message}` };
     } else if (data && data.length > 0) {
-      banksData = data;
+      const supabaseData = data as SupabaseBankData[];
+      banksData = supabaseData.map(item => ({
+        name: item.Banco,
+        created_at: item.Fecha,
+        buy: item.Compra,
+        sell: item.Venta,
+        buy_change: 0, // Not available in table
+        sell_change: 0, // Not available in table
+        logo_url: logos[item.Banco.toUpperCase()] || 'https://placehold.co/128x32.png',
+      }));
+      hasData = true;
     } else if (data && data.length === 0) {
-      // Connected successfully, but no data in the table
-      banksData = []; // or you can keep mock data
-       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
+      connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
-
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
+  }
+
+  if (!hasData && !connectionError) {
+      banksData = mockBanksData;
   }
 
   const bestBuy = banksData.length > 0 ? Math.max(...banksData.map(b => b.buy)) : 0;
@@ -121,9 +163,11 @@ export default async function Home() {
           <section>
             <h2 className="text-2xl font-bold mb-4">Tipos de Cambio por Banco</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {banksData.map((bank) => (
+              {banksData.length > 0 ? banksData.map((bank) => (
                 <BankRateCard key={bank.name} name={bank.name} date={new Date(bank.created_at).toLocaleDateString('es-PE')} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
-              ))}
+              )) : (
+                 <p className="text-muted-foreground col-span-full">No hay datos de bancos para mostrar.</p>
+              )}
             </div>
           </section>
 
@@ -151,3 +195,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
