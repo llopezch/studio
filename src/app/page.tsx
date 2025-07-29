@@ -1,66 +1,26 @@
 
 import { ArrowDownUp, BarChart, CircleDollarSign, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
+import { createClient } from '@/lib/supabase';
 
-const banksData = [
-  {
-    name: 'BCP',
-    date: '10/07/2024',
-    buy: 3.785,
-    sell: 3.825,
-    buy_change: 0.002,
-    sell_change: -0.001,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg',
-    created_at: new Date().toISOString()
-  },
-  {
-    name: 'Interbank',
-    date: '10/07/2024',
-    buy: 3.780,
-    sell: 3.830,
-    buy_change: -0.001,
-    sell_change: 0.003,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg',
-    created_at: new Date().toISOString()
-  },
-  {
-    name: 'BBVA',
-    date: '10/07/2024',
-    buy: 3.790,
-    sell: 3.820,
-    buy_change: 0.003,
-    sell_change: -0.002,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460305-bbva.svg',
-    created_at: new Date().toISOString()
-  },
-    {
-    name: 'Scotiabank',
-    date: '10/07/2024',
-    buy: 3.775,
-    sell: 3.835,
-    buy_change: 0.001,
-    sell_change: 0.001,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg',
-    created_at: new Date().toISOString()
-  },
-  {
-    name: 'Banco de la Nación',
-    date: '10/07/2024',
-    buy: 3.770,
-    sell: 3.840,
-    buy_change: 0.000,
-    sell_change: 0.000,
-    logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg',
-    created_at: new Date().toISOString()
+export default async function Home() {
+  const supabase = createClient();
+  const { data: banksData, error } = await supabase.from('banks').select('*').order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching data from Supabase:", error);
+    // Render an error message or a fallback UI
+    return <div>Error al cargar los datos. Por favor, intente más tarde.</div>;
   }
-];
+  
+  if (!banksData || banksData.length === 0) {
+    return <div>No hay datos disponibles.</div>
+  }
 
-
-export default function Home() {
   const bestBuy = Math.max(...banksData.map(b => b.buy));
   const bestSell = Math.min(...banksData.map(b => b.sell));
   const avgBuy = (banksData.reduce((sum, b) => sum + b.buy, 0) / banksData.length).toFixed(3);
