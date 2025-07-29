@@ -19,23 +19,30 @@ const mockBanksData = [
 export default async function Home() {
   const supabase = createClient();
   let banksData = mockBanksData;
-  let connectionError = null;
+  let connectionError: { message: string } | null = null;
 
   if (supabase) {
     const { data, error } = await supabase.from('banks').select('*').order('created_at', { ascending: false });
+    
     if (error) {
-      connectionError = error;
-    } else if(data && data.length > 0) {
+      console.error("Supabase error:", error);
+      connectionError = { message: `Error al conectar con Supabase: ${error.message}` };
+    } else if (data && data.length > 0) {
       banksData = data;
+    } else if (data && data.length === 0) {
+      // Connected successfully, but no data in the table
+      banksData = []; // or you can keep mock data
+       connectionError = { message: "Conectado a Supabase, pero la tabla 'banks' está vacía. Mostrando datos de ejemplo." };
     }
+
   } else {
-     connectionError = { message: "Supabase credentials are not configured. Falling back to mock data." };
+     connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
   }
 
-  const bestBuy = Math.max(...banksData.map(b => b.buy));
-  const bestSell = Math.min(...banksData.map(b => b.sell));
-  const avgBuy = (banksData.reduce((sum, b) => sum + b.buy, 0) / banksData.length).toFixed(3);
-  const difference = (bestSell - bestBuy).toFixed(3);
+  const bestBuy = banksData.length > 0 ? Math.max(...banksData.map(b => b.buy)) : 0;
+  const bestSell = banksData.length > 0 ? Math.min(...banksData.map(b => b.sell)) : 0;
+  const avgBuy = banksData.length > 0 ? (banksData.reduce((sum, b) => sum + b.buy, 0) / banksData.length).toFixed(3) : '0.000';
+  const difference = banksData.length > 0 ? (bestSell - bestBuy).toFixed(3) : '0.000';
   const bestBuyBank = banksData.find(b => b.buy === bestBuy)?.name;
   const bestSellBank = banksData.find(b => b.sell === bestSell)?.name;
 
@@ -61,10 +68,9 @@ export default async function Home() {
           {connectionError && (
             <Alert variant="destructive">
               <Terminal className="h-4 w-4" />
-              <AlertTitle>Error de Conexión</AlertTitle>
+              <AlertTitle>Aviso de Conexión</AlertTitle>
               <AlertDescription>
-                No se pudo conectar con Supabase. Mostrando datos de ejemplo. Por favor, verifica tus credenciales en el archivo .env.local.
-                <p className="font-mono text-xs mt-2">{connectionError.message}</p>
+                {connectionError.message}
               </AlertDescription>
             </Alert>
           )}
@@ -73,8 +79,8 @@ export default async function Home() {
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Mejor Compra</p>
-                  <div className="text-2xl font-bold">S/{bestBuy.toFixed(3)}</div>
-                  <p className="text-xs text-muted-foreground">{bestBuyBank}</p>
+                  <div className="text-2xl font-bold">S/{bestBuy > 0 ? bestBuy.toFixed(3) : '---'}</div>
+                  <p className="text-xs text-muted-foreground">{bestBuyBank || 'N/A'}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
               </CardContent>
@@ -83,8 +89,8 @@ export default async function Home() {
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Mejor Venta</p>
-                  <div className="text-2xl font-bold">S/{bestSell.toFixed(3)}</div>
-                  <p className="text-xs text-muted-foreground">{bestSellBank}</p>
+                  <div className="text-2xl font-bold">S/{bestSell > 0 ? bestSell.toFixed(3) : '---'}</div>
+                  <p className="text-xs text-muted-foreground">{bestSellBank || 'N/A'}</p>
                 </div>
                 <TrendingDown className="h-8 w-8 text-destructive" />
               </CardContent>
@@ -94,7 +100,7 @@ export default async function Home() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Promedio Compra</p>
                   <div className="text-2xl font-bold">S/{avgBuy}</div>
-                  <p className="text-xs text-muted-foreground">Entre {banksData.length} bancos</p>
+                  <p className="text-xs text-muted-foreground">{banksData.length > 0 ? `Entre ${banksData.length} bancos` : 'N/A'}</p>
                 </div>
                 <BarChart className="h-8 w-8 text-muted-foreground" />
               </CardContent>
