@@ -75,7 +75,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const handlePrevMonth = () => {
     setDisplayDate(d => {
       if (!d) return null;
-      const newDate = new Date(d.getUTCFullYear(), d.getUTCMonth() - 1, 1);
+      const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
       return newDate;
     });
   }
@@ -83,7 +83,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const handleNextMonth = () => {
     setDisplayDate(d => {
        if (!d) return null;
-       const newDate = new Date(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
+       const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
        return newDate;
     });
   }
