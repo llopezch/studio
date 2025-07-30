@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface SunatData {
   [key: string]: {
@@ -20,20 +21,52 @@ interface ExchangeRateCalendarProps {
   rates: SunatData;
 }
 
-// Helper to format a date to YYYY-MM-DD in UTC, ignoring local timezone.
+// Helper to format a date to YYYY-MM-DD, always in UTC.
 function getUTCDateKey(date: Date): string {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = date.getUTCDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
 
 
 export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
-  const [displayDate, setDisplayDate] = React.useState(new Date())
+  const [displayDate, setDisplayDate] = React.useState<Date | null>(null)
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
-  const today = new Date();
+  React.useEffect(() => {
+    // This code runs only on the client, after the initial render.
+    // This avoids the hydration mismatch error.
+    setDisplayDate(new Date());
+  }, []);
+
+  if (!displayDate) {
+    // Render a skeleton or loading state on the server and initial client render
+    return (
+        <div className="p-2">
+            <div className="flex items-center justify-between mb-4">
+                <Skeleton className="h-6 w-32" />
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-7 w-7" />
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-7 w-7" />
+                </div>
+            </div>
+            <div className="grid grid-cols-7 text-center text-xs text-muted-foreground">
+                <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+            </div>
+            <div className="grid grid-cols-7 mt-2">
+                {Array.from({ length: 35 }).map((_, i) => (
+                    <div key={i} className="p-1">
+                        <Skeleton className="h-16 w-full" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+  }
+
+  const today = new Date(); // Safe to use now, as we're client-side.
   const todayKey = getUTCDateKey(today);
 
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
@@ -41,22 +74,22 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
 
   const handlePrevMonth = () => {
     setDisplayDate(d => {
-      const newDate = new Date(d);
-      newDate.setMonth(d.getMonth() - 1);
+      if (!d) return null;
+      const newDate = new Date(d.getUTCFullYear(), d.getUTCMonth() - 1, 1);
       return newDate;
     });
   }
 
   const handleNextMonth = () => {
     setDisplayDate(d => {
-       const newDate = new Date(d);
-      newDate.setMonth(d.getMonth() + 1);
-      return newDate;
+       if (!d) return null;
+       const newDate = new Date(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
+       return newDate;
     });
   }
 
-  const firstDayOfMonth = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay();
-  const daysInMonth = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), 1).getUTCDay();
+  const daysInMonth = new Date(displayDate.getUTCFullYear(), displayDate.getUTCMonth() + 1, 0).getUTCDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
@@ -95,7 +128,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
         {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} />)}
         
         {days.map((day) => {
-          const currentDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+          const currentDate = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), day));
           const dateKey = getUTCDateKey(currentDate);
           const rateData = rates[dateKey];
           const isToday = dateKey === todayKey;
