@@ -35,7 +35,7 @@ interface SupabaseBankData {
 }
 
 interface SupabaseSunatData {
-  Fecha: string; // YYYY-MM-DD string from Supabase
+  Fecha: string; 
   Compra: number;
   Venta: number;
 }
@@ -142,7 +142,7 @@ export default async function Home() {
     // Fetch SUNAT data
     const { data: sunatResult, error: sunatError } = await supabase
       .from('SUNAT')
-      .select('*');
+      .select('Fecha, Compra, Venta');
     
     if (sunatError) {
         console.error("Supabase error (SUNAT):", sunatError);
