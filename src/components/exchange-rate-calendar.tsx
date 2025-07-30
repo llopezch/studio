@@ -3,7 +3,6 @@
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
@@ -11,7 +10,7 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface SunatData {
-  [key: string]: {
+  [key: string]: { // Key is YYYY-MM-DD string
     buy: number;
     sell: number;
   }
@@ -21,11 +20,11 @@ interface ExchangeRateCalendarProps {
   rates: SunatData;
 }
 
-// Helper to format a date to YYYY-MM-DD in UTC.
-function getUTCDateKey(date: Date): string {
-    const year = date.getUTCFullYear();
-    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-    const day = date.getUTCDate().toString().padStart(2, '0');
+// Helper to format a Date object to a YYYY-MM-DD string.
+function toDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
 
@@ -67,15 +66,15 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   }
 
   const today = new Date(); // Safe to use now, as we're client-side.
-  const todayKey = getUTCDateKey(today);
+  const todayKey = toDateKey(today);
 
-  const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
-  const year = displayDate.getUTCFullYear();
+  const monthName = displayDate.toLocaleString('es-PE', { month: 'long'});
+  const year = displayDate.getFullYear();
 
   const handlePrevMonth = () => {
     setDisplayDate(d => {
       if (!d) return null;
-      const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
+      const newDate = new Date(d.getFullYear(), d.getMonth() - 1, 1);
       return newDate;
     });
   }
@@ -83,13 +82,13 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const handleNextMonth = () => {
     setDisplayDate(d => {
        if (!d) return null;
-       const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
+       const newDate = new Date(d.getFullYear(), d.getMonth() + 1, 1);
        return newDate;
     });
   }
 
-  const firstDayOfMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), 1)).getUTCDay();
-  const daysInMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth() + 1, 0)).getUTCDate();
+  const firstDayOfMonth = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay();
+  const daysInMonth = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
@@ -128,8 +127,8 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
         {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} />)}
         
         {days.map((day) => {
-          const currentDate = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), day));
-          const dateKey = getUTCDateKey(currentDate);
+          const currentDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+          const dateKey = toDateKey(currentDate);
           const rateData = rates[dateKey];
           const isToday = dateKey === todayKey;
           
