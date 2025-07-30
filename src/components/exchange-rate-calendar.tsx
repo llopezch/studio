@@ -31,6 +31,8 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
         // Appending 'T00:00:00Z' ensures parsing in UTC to avoid timezone shifts.
         const parts = startDate.split('-').map(Number);
         initialDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+    } else {
+        initialDate.setUTCHours(0, 0, 0, 0);
     }
     setDisplayDate(initialDate);
   }, [startDate]);

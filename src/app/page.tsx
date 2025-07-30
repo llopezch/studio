@@ -35,9 +35,9 @@ interface SupabaseBankData {
 }
 
 interface SupabaseSunatData {
-  Date: string; 
-  Purchase: number;
-  venta: number;
+  Fecha: string; 
+  Compra: number;
+  Venta: number;
 }
 
 // Interface for data used in the components
@@ -147,8 +147,10 @@ export default async function Home() {
     if (!connectionError) {
       const { data: sunatResult, error: sunatError } = await supabase
         .from('SUNAT')
-        .select('Date, Purchase, venta');
+        .select('Fecha, Compra, Venta');
       
+      console.log('Datos SUNAT desde Supabase:', sunatResult);
+
       if (sunatError) {
           console.error("Supabase error (SUNAT):", sunatError);
           if (isObjectEmpty(sunatError)) {
@@ -157,18 +159,18 @@ export default async function Home() {
               connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
           }
       } else if (sunatResult && sunatResult.length > 0) {
-          const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
+          const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
           
           sunatData = supabaseSunatData.reduce((acc, item) => {
-              if (item.Date) {
-                  const dateKey = toDateKey(new Date(item.Date));
-                  acc[dateKey] = { buy: item.Purchase, sell: item.venta };
+              if (item.Fecha) {
+                  const dateKey = toDateKey(new Date(item.Fecha + 'T00:00:00Z'));
+                  acc[dateKey] = { buy: item.Compra, sell: item.Venta };
               }
               return acc;
           }, {} as SunatData);
 
-          if (supabaseSunatData[0]?.Date) {
-              sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Date));
+          if (supabaseSunatData[0]?.Fecha) {
+              sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Fecha + 'T00:00:00Z'));
           }
       } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
           connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
