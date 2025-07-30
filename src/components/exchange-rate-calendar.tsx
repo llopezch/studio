@@ -73,6 +73,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   }
 
   const today = new Date(); // Safe to use now, as we're client-side.
+  today.setHours(0, 0, 0, 0);
   const todayKey = toDateKey(today);
 
   // Use UTC methods for month and year to be consistent
