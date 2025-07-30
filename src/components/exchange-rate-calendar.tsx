@@ -88,8 +88,8 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
     });
   }
 
-  const firstDayOfMonth = new Date(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), 1).getUTCDay();
-  const daysInMonth = new Date(displayDate.getUTCFullYear(), displayDate.getUTCMonth() + 1, 0).getUTCDate();
+  const firstDayOfMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth() + 1, 0)).getUTCDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
