@@ -96,6 +96,7 @@ export default async function Home() {
       const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
       supabaseData.forEach(item => {
         const dateKey = item.Fecha;
+        // The 'Z' suffix is crucial to interpret the date as UTC
         const dateObj = new Date(item.Fecha + 'T00:00:00Z');
         if (!dailyAverages[dateKey]) {
           dailyAverages[dateKey] = { sum: 0, count: 0, dateObj };
@@ -108,7 +109,8 @@ export default async function Home() {
         const avg = dailyAverages[dateKey].sum / dailyAverages[dateKey].count;
         const dateObj = dailyAverages[dateKey].dateObj;
         return {
-          date: dateObj.toLocaleDateString('es-PE', { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('.', ''),
+           // Using UTC methods to get date parts and formatting manually
+          date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
           value: parseFloat(avg.toFixed(4)),
           fullDate: dateObj,
         }
@@ -130,8 +132,10 @@ export default async function Home() {
     } else if (sunatResult) {
         const supabaseSunatData = sunatResult as SupabaseSunatData[];
         sunatData = supabaseSunatData.reduce((acc, item) => {
+            // The 'Z' suffix is crucial to interpret the date as UTC
             const date = new Date(item.Fecha + 'T00:00:00Z');
-            const dateKey = date.toISOString().split('T')[0];
+            // Use UTC methods to create the key, preventing timezone shifts
+            const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
             acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             return acc;
         }, {} as SunatData);
