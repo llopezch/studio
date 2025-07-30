@@ -61,6 +61,7 @@ interface SunatData {
 interface ChartData {
   date: string;
   value: number;
+  fullDate: Date;
 }
 
 export default async function Home() {
@@ -68,6 +69,7 @@ export default async function Home() {
   let banksData: BankData[] = [];
   let chartData: ChartData[] = [];
   let sunatData: SunatData = {};
+  let sunatStartDate: string | null = null;
   let connectionError: { message: string } | null = null;
   let hasData = false;
 
@@ -94,12 +96,13 @@ export default async function Home() {
       hasData = true;
 
       // Process data for chart
-      const dailyAverages: { [key: string]: { sum: number, count: number } } = {};
+      const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
       
       supabaseData.forEach(item => {
         const dateKey = item.Fecha;
+        const dateObj = new Date(dateKey + 'T00:00:00Z');
         if (!dailyAverages[dateKey]) {
-          dailyAverages[dateKey] = { sum: 0, count: 0 };
+          dailyAverages[dateKey] = { sum: 0, count: 0, dateObj: dateObj };
         }
         dailyAverages[dateKey].sum += (item.Compra + item.Venta) / 2;
         dailyAverages[dateKey].count++;
@@ -107,12 +110,13 @@ export default async function Home() {
       
       chartData = Object.keys(dailyAverages).map(dateKey => {
         const avg = dailyAverages[dateKey].sum / dailyAverages[dateKey].count;
-        const dateObj = new Date(dateKey + 'T00:00:00Z'); // Treat as UTC
+        const dateObj = dailyAverages[dateKey].dateObj;
         return {
           date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
           value: parseFloat(avg.toFixed(4)),
+          fullDate: dateObj,
         }
-      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
 
     } else if (banksResult && banksResult.length === 0) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
@@ -121,15 +125,17 @@ export default async function Home() {
     // Fetch SUNAT data
     const { data: sunatResult, error: sunatError } = await supabase
       .from('SUNAT')
-      .select('Fecha, Compra, Venta');
+      .select('Fecha, Compra, Venta')
+      .order('Fecha', { ascending: true }); // Order by date to get the first date
     
     if (sunatError) {
       console.error("Supabase error (SUNAT):", sunatError);
        if (!connectionError) {
         connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
       }
-    } else if (sunatResult) {
+    } else if (sunatResult && sunatResult.length > 0) {
       const supabaseSunatData = sunatResult as SupabaseSunatData[];
+      sunatStartDate = supabaseSunatData[0].Fecha; // Get the first date
       sunatData = supabaseSunatData.reduce((acc, item) => {
         if (item.Fecha) {
             acc[item.Fecha] = { buy: item.Compra, sell: item.Venta };
@@ -247,7 +253,7 @@ export default async function Home() {
               <h2 className="text-2xl font-bold mb-4">Tipo de Cambio - SUNAT</h2>
               <Card>
                 <CardContent className="p-2">
-                  <ExchangeRateCalendar rates={sunatData} />
+                  <ExchangeRateCalendar rates={sunatData} startDate={sunatStartDate} />
                 </CardContent>
               </Card>
             </div>

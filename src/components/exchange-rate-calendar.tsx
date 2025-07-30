@@ -18,26 +18,33 @@ interface SunatData {
 
 interface ExchangeRateCalendarProps {
   rates: SunatData;
+  startDate?: string | null;
 }
 
-// Helper to format a Date object to a YYYY-MM-DD string.
+// Helper to format a Date object to a YYYY-MM-DD string, respecting UTC.
 function toDateKey(date: Date): string {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = date.getUTCDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
 
 
-export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
+export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarProps) {
   const [displayDate, setDisplayDate] = React.useState<Date | null>(null)
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
   React.useEffect(() => {
     // This code runs only on the client, after the initial render.
     // This avoids the hydration mismatch error.
-    setDisplayDate(new Date());
-  }, []);
+    let initialDate = new Date();
+    // If a start date from Supabase is provided, use it.
+    // We add 'T00:00:00Z' to ensure it's parsed as a UTC date.
+    if (startDate) {
+        initialDate = new Date(startDate + 'T00:00:00Z');
+    }
+    setDisplayDate(initialDate);
+  }, [startDate]);
 
   if (!displayDate) {
     // Render a skeleton or loading state on the server and initial client render
@@ -68,13 +75,15 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const today = new Date(); // Safe to use now, as we're client-side.
   const todayKey = toDateKey(today);
 
-  const monthName = displayDate.toLocaleString('es-PE', { month: 'long'});
-  const year = displayDate.getFullYear();
+  // Use UTC methods for month and year to be consistent
+  const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
+  const year = displayDate.getUTCFullYear();
 
   const handlePrevMonth = () => {
     setDisplayDate(d => {
       if (!d) return null;
-      const newDate = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+      // Use UTC date to avoid timezone shifts
+      const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
       return newDate;
     });
   }
@@ -82,13 +91,14 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
   const handleNextMonth = () => {
     setDisplayDate(d => {
        if (!d) return null;
-       const newDate = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+       // Use UTC date to avoid timezone shifts
+       const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
        return newDate;
     });
   }
 
-  const firstDayOfMonth = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay();
-  const daysInMonth = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth() + 1, 0)).getUTCDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
@@ -127,7 +137,7 @@ export function ExchangeRateCalendar({ rates }: ExchangeRateCalendarProps) {
         {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} />)}
         
         {days.map((day) => {
-          const currentDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+          const currentDate = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), day));
           const dateKey = toDateKey(currentDate);
           const rateData = rates[dateKey];
           const isToday = dateKey === todayKey;
