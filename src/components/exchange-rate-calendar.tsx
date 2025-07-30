@@ -28,10 +28,9 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     // If a start date from Supabase is provided, use it.
     if (startDate) {
         // The startDate is YYYY-MM-DD, so we create a Date object from it.
-        // Appending 'T00:00:00' makes it explicit we're at the start of the day in the local timezone,
-        // which is then correctly handled by `toDateKey` using UTC methods.
+        // Appending 'T00:00:00Z' ensures parsing in UTC to avoid timezone shifts.
         const parts = startDate.split('-').map(Number);
-        initialDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        initialDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
     }
     setDisplayDate(initialDate);
   }, [startDate]);
@@ -68,16 +67,16 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   }
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setUTCHours(0, 0, 0, 0);
   const todayKey = toDateKey(today);
 
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
-  const year = displayDate.getFullYear();
+  const year = displayDate.getUTCFullYear();
 
   const handlePrevMonth = () => {
     setDisplayDate(d => {
       if (!d) return null;
-      const newDate = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+      const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
       return newDate;
     });
   }
@@ -85,13 +84,13 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   const handleNextMonth = () => {
     setDisplayDate(d => {
        if (!d) return null;
-       const newDate = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+       const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
        return newDate;
     });
   }
 
-  const firstDayOfMonth = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay();
-  const daysInMonth = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), 1).getUTCDay();
+  const daysInMonth = new Date(displayDate.getUTCFullYear(), displayDate.getUTCMonth() + 1, 0).getUTCDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
@@ -130,7 +129,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
         {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} />)}
         
         {days.map((day) => {
-          const currentDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+          const currentDate = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), day));
           const dateKey = toDateKey(currentDate);
           const rateData = rates[dateKey];
           const isToday = dateKey === todayKey;
@@ -167,5 +166,3 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     </div>
   )
 }
-
-    

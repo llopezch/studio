@@ -171,6 +171,8 @@ export default async function Home() {
         if (supabaseSunatData[0]?.Date) {
             sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Date));
         }
+    } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
+        connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
     }
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
@@ -293,5 +295,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
