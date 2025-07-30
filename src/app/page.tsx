@@ -64,13 +64,27 @@ interface ChartData {
   fullDate: Date;
 }
 
+const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+
+const rlsHelpMessage = (tableName: string) => (
+  <>
+    <span>No se pudieron obtener los datos de la tabla '{tableName}'. Esto usualmente se debe a que la 'Seguridad a Nivel de Fila' (RLS) está habilitada y no hay una política que permita la lectura.</span>
+    <br /><br />
+    <span>Para solucionarlo, ve al <b>SQL Editor</b> en tu proyecto de Supabase y ejecuta la siguiente consulta para permitir el acceso de lectura público a tu tabla:</span>
+    <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-sm">
+      {`CREATE POLICY "Enable read access for all users" ON "public"."${tableName}" FOR SELECT USING (true);`}
+    </pre>
+  </>
+);
+
+
 export default async function Home() {
   const supabase = createClient();
   let banksData: BankData[] = [];
   let chartData: ChartData[] = [];
   let sunatData: SunatData = {};
   let sunatStartDate: string | null = null;
-  let connectionError: { message: string } | null = null;
+  let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
 
   if (supabase) {
@@ -81,7 +95,11 @@ export default async function Home() {
     
     if (banksError) {
       console.error("Supabase error (BANCOS):", banksError);
-      connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}` };
+      if (isObjectEmpty(banksError)) {
+        connectionError = { message: rlsHelpMessage('BANCOS') };
+      } else {
+        connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}` };
+      }
     } else if (banksResult && banksResult.length > 0) {
       const supabaseData = banksResult as SupabaseBankData[];
       banksData = supabaseData.map(item => ({
@@ -95,7 +113,6 @@ export default async function Home() {
       }));
       hasData = true;
 
-      // Process data for chart
       const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
       
       supabaseData.forEach(item => {
@@ -118,7 +135,7 @@ export default async function Home() {
         }
       }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
 
-    } else if (banksResult && banksResult.length === 0) {
+    } else if (banksResult && banksResult.length === 0 && !connectionError) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
 
@@ -126,19 +143,26 @@ export default async function Home() {
     const { data: sunatResult, error: sunatError } = await supabase
       .from('SUNAT')
       .select('Date, Compra, Venta')
-      .order('Date', { ascending: true }); // Order by date to get the first date
+      .order('Date', { ascending: true });
     
     if (sunatError) {
-      console.error("Supabase error (SUNAT):", sunatError);
-       if (!connectionError) {
-        connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
-      }
+        console.error("Supabase error (SUNAT):", sunatError);
+        if (!connectionError) {
+             if (isObjectEmpty(sunatError)) {
+                connectionError = { message: rlsHelpMessage('SUNAT') };
+            } else {
+                connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
+            }
+        }
     } else if (sunatResult && sunatResult.length > 0) {
         const supabaseSunatData = sunatResult as SupabaseSunatData[];
-        sunatStartDate = supabaseSunatData[0].Date; // Get the first date
+        const firstDate = supabaseSunatData[0].Date;
+        if(firstDate) {
+            sunatStartDate = firstDate.split('T')[0];
+        }
+
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            // The `Date` from Supabase is a clean 'YYYY-MM-DD' string.
-            const dateKey = item.Date;
+            const dateKey = item.Date ? item.Date.split('T')[0] : null;
             if (dateKey) {
                 acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             }
@@ -266,5 +290,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
