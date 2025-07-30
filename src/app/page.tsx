@@ -37,7 +37,7 @@ interface SupabaseBankData {
 interface SupabaseSunatData {
   Date: string; 
   Purchase: number;
-  Venta: number;
+  venta: number;
 }
 
 // Interface for data used in the components
@@ -146,7 +146,7 @@ export default async function Home() {
     // Fetch SUNAT data
     const { data: sunatResult, error: sunatError } = await supabase
       .from('SUNAT')
-      .select('Date, Purchase, Venta');
+      .select('Date, Purchase, venta');
     
     if (sunatError) {
         console.error("Supabase error (SUNAT):", sunatError);
@@ -163,7 +163,7 @@ export default async function Home() {
         sunatData = supabaseSunatData.reduce((acc, item) => {
             if (item.Date) {
                 const dateKey = toDateKey(new Date(item.Date));
-                acc[dateKey] = { buy: item.Purchase, sell: item.Venta };
+                acc[dateKey] = { buy: item.Purchase, sell: item.venta };
             }
             return acc;
         }, {} as SunatData);
@@ -295,5 +295,7 @@ export default async function Home() {
     </div>
   );
 }
+
+    
 
     
