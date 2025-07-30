@@ -150,7 +150,7 @@ export default async function Home() {
     
     if (sunatError) {
         console.error("Supabase error (SUNAT):", sunatError);
-        if (!connectionError) {
+        if (!connectionError) { // Solo asigna si no hay un error previo (prioriza el de BANCOS)
              if (isObjectEmpty(sunatError)) {
                 connectionError = { message: rlsHelpMessage('SUNAT') };
             } else {
@@ -295,3 +295,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
