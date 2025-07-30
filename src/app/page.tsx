@@ -35,8 +35,8 @@ interface SupabaseBankData {
 }
 
 interface SupabaseSunatData {
-  Fecha: string; 
-  Compra: number;
+  Date: string; 
+  Purchase: number;
   Venta: number;
 }
 
@@ -77,14 +77,9 @@ const rlsHelpMessage = (tableName: string) => (
   </>
 );
 
-export const toDateKey = (dateStr: string | Date): string => {
-    // This function needs to be robust to handle dates from Supabase (e.g., '2025-07-30T00:00:00+00:00')
-    // and create a simple YYYY-MM-DD key.
-    const date = new Date(dateStr);
-    const year = date.getUTCFullYear();
-    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-    const day = date.getUTCDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
+export const toDateKey = (date: Date): string => {
+  // Formato YYYY-MM-DD consistente
+  return date.toISOString().split('T')[0];
 }
 
 export default async function Home() {
@@ -151,7 +146,7 @@ export default async function Home() {
     // Fetch SUNAT data
     const { data: sunatResult, error: sunatError } = await supabase
       .from('SUNAT')
-      .select('Fecha, Compra, Venta');
+      .select('Date, Purchase, Venta');
     
     if (sunatError) {
         console.error("Supabase error (SUNAT):", sunatError);
@@ -163,18 +158,18 @@ export default async function Home() {
             }
         }
     } else if (sunatResult && sunatResult.length > 0) {
-        const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
+        const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
         
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            if (item.Fecha) {
-                const dateKey = toDateKey(item.Fecha);
-                acc[dateKey] = { buy: item.Compra, sell: item.Venta };
+            if (item.Date) {
+                const dateKey = toDateKey(new Date(item.Date));
+                acc[dateKey] = { buy: item.Purchase, sell: item.Venta };
             }
             return acc;
         }, {} as SunatData);
 
-        if (supabaseSunatData[0]?.Fecha) {
-            sunatStartDate = toDateKey(supabaseSunatData[0].Fecha);
+        if (supabaseSunatData[0]?.Date) {
+            sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Date));
         }
     }
   } else {

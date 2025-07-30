@@ -26,12 +26,20 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     // This avoids the hydration mismatch error.
     let initialDate = new Date();
     // If a start date from Supabase is provided, use it.
-    // The startDate is already in YYYY-MM-DD format, so we add 'T00:00:00Z' to ensure it's parsed as a UTC date.
     if (startDate) {
-        initialDate = new Date(startDate + 'T00:00:00Z');
+        // The startDate is YYYY-MM-DD, so we create a Date object from it.
+        // Appending 'T00:00:00' makes it explicit we're at the start of the day in the local timezone,
+        // which is then correctly handled by `toDateKey` using UTC methods.
+        const parts = startDate.split('-').map(Number);
+        initialDate = new Date(parts[0], parts[1] - 1, parts[2]);
     }
     setDisplayDate(initialDate);
   }, [startDate]);
+  
+  // Debugging log as requested by user
+  React.useEffect(() => {
+    console.log("Datos recibidos en calendario:", { rates, startDate });
+  },[rates, startDate]);
 
   if (!displayDate) {
     // Render a skeleton or loading state on the server and initial client render
@@ -59,19 +67,17 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     );
   }
 
-  const today = new Date(); // Safe to use now, as we're client-side.
-  today.setUTCHours(0, 0, 0, 0); // Use UTC for today's date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const todayKey = toDateKey(today);
 
-  // Use UTC methods for month and year to be consistent
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
-  const year = displayDate.getUTCFullYear();
+  const year = displayDate.getFullYear();
 
   const handlePrevMonth = () => {
     setDisplayDate(d => {
       if (!d) return null;
-      // Use UTC date to avoid timezone shifts
-      const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
+      const newDate = new Date(d.getFullYear(), d.getMonth() - 1, 1);
       return newDate;
     });
   }
@@ -79,14 +85,13 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   const handleNextMonth = () => {
     setDisplayDate(d => {
        if (!d) return null;
-       // Use UTC date to avoid timezone shifts
-       const newDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
+       const newDate = new Date(d.getFullYear(), d.getMonth() + 1, 1);
        return newDate;
     });
   }
 
-  const firstDayOfMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), 1)).getUTCDay();
-  const daysInMonth = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth() + 1, 0)).getUTCDate();
+  const firstDayOfMonth = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1).getDay();
+  const daysInMonth = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
@@ -125,7 +130,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
         {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} />)}
         
         {days.map((day) => {
-          const currentDate = new Date(Date.UTC(displayDate.getUTCFullYear(), displayDate.getUTCMonth(), day));
+          const currentDate = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
           const dateKey = toDateKey(currentDate);
           const rateData = rates[dateKey];
           const isToday = dateKey === todayKey;
@@ -144,13 +149,15 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
                 <div className={cn("font-semibold", !hasData && "text-muted-foreground")}>
                   {day}
                 </div>
-                {hasData && (
+                {hasData ? (
                   <div className={cn(
                     "text-xs font-bold",
                     rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive"
                   )}>
                     {rateData[rateType].toFixed(3)}
                   </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">N/D</div>
                 )}
               </div>
             </div>
