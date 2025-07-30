@@ -78,6 +78,8 @@ const rlsHelpMessage = (tableName: string) => (
 );
 
 const toDateKey = (dateStr: string): string => {
+    // This function needs to be robust to handle dates from Supabase (e.g., '2025-07-30T00:00:00+00:00')
+    // and create a simple YYYY-MM-DD key.
     const date = new Date(dateStr);
     const year = date.getUTCFullYear();
     const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
@@ -124,7 +126,7 @@ export default async function Home() {
       
       supabaseData.forEach(item => {
         const dateKey = item.Fecha;
-        const dateObj = new Date(dateKey);
+        const dateObj = new Date(dateKey + 'T00:00:00Z'); // Ensure UTC parsing
         if (!dailyAverages[dateKey]) {
           dailyAverages[dateKey] = { sum: 0, count: 0, dateObj: dateObj };
         }
@@ -266,7 +268,7 @@ export default async function Home() {
             <h2 className="text-2xl font-bold mb-4">Tipos de Cambio por Banco</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {banksData.length > 0 ? banksData.map((bank) => (
-                <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at).toLocaleDateString('es-PE', { timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
+                <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
               )) : (
                  <p className="text-muted-foreground col-span-full">No hay datos de bancos para mostrar.</p>
               )}
