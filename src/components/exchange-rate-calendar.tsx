@@ -150,15 +150,13 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
                 <div className={cn("font-semibold", !hasData && "text-muted-foreground")}>
                   {day}
                 </div>
-                {hasData ? (
+                {hasData && (
                   <div className={cn(
                     "text-xs font-bold",
                     rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive"
                   )}>
                     {rateData[rateType].toFixed(3)}
                   </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground">N/D</div>
                 )}
               </div>
             </div>
@@ -168,5 +166,3 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     </div>
   )
 }
-
-    
