@@ -61,7 +61,6 @@ interface SunatData {
 interface ChartData {
   date: string;
   value: number;
-  fullDate: Date;
 }
 
 export default async function Home() {
@@ -96,8 +95,7 @@ export default async function Home() {
       const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
       supabaseData.forEach(item => {
         const dateKey = item.Fecha;
-        // The 'Z' suffix is crucial to interpret the date as UTC
-        const dateObj = new Date(item.Fecha + 'T00:00:00Z');
+        const dateObj = new Date(item.Fecha + 'T00:00:00Z'); // Force UTC interpretation
         if (!dailyAverages[dateKey]) {
           dailyAverages[dateKey] = { sum: 0, count: 0, dateObj };
         }
@@ -109,12 +107,10 @@ export default async function Home() {
         const avg = dailyAverages[dateKey].sum / dailyAverages[dateKey].count;
         const dateObj = dailyAverages[dateKey].dateObj;
         return {
-           // Using UTC methods to get date parts and formatting manually
           date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
           value: parseFloat(avg.toFixed(4)),
-          fullDate: dateObj,
         }
-      }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     } else if (banksResult && banksResult.length === 0) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
@@ -132,10 +128,7 @@ export default async function Home() {
     } else if (sunatResult) {
         const supabaseSunatData = sunatResult as SupabaseSunatData[];
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            // The 'Z' suffix is crucial to interpret the date as UTC
-            const date = new Date(item.Fecha + 'T00:00:00Z');
-            // Use UTC methods to create the key, preventing timezone shifts
-            const dateKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+            const dateKey = item.Fecha; // Use the YYYY-MM-DD string directly as the key
             acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             return acc;
         }, {} as SunatData);
