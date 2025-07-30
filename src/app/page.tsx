@@ -35,7 +35,7 @@ interface SupabaseBankData {
 }
 
 interface SupabaseSunatData {
-  Date: string; // YYYY-MM-DD string from Supabase
+  Fecha: string; // YYYY-MM-DD string from Supabase
   Compra: number;
   Venta: number;
 }
@@ -142,7 +142,7 @@ export default async function Home() {
     // Fetch SUNAT data
     const { data: sunatResult, error: sunatError } = await supabase
       .from('SUNAT')
-      .select('Date, Compra, Venta');
+      .select('*');
     
     if (sunatError) {
         console.error("Supabase error (SUNAT):", sunatError);
@@ -154,15 +154,15 @@ export default async function Home() {
             }
         }
     } else if (sunatResult && sunatResult.length > 0) {
-        const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
+        const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
         
-        const firstDate = supabaseSunatData[0].Date;
+        const firstDate = supabaseSunatData[0].Fecha;
         if(firstDate) {
             sunatStartDate = firstDate.split('T')[0];
         }
 
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            const dateKey = item.Date ? item.Date.split('T')[0] : null;
+            const dateKey = item.Fecha ? item.Fecha.split('T')[0] : null;
             if (dateKey) {
                 acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             }
@@ -290,5 +290,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
