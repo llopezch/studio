@@ -35,7 +35,7 @@ interface SupabaseBankData {
 }
 
 interface SupabaseSunatData {
-  Fecha: string; // YYYY-MM-DD
+  Fecha: string; // YYYY-MM-DD string from Supabase
   Compra: number;
   Venta: number;
 }
@@ -134,14 +134,17 @@ export default async function Home() {
         connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
       }
     } else if (sunatResult && sunatResult.length > 0) {
-      const supabaseSunatData = sunatResult as SupabaseSunatData[];
-      sunatStartDate = supabaseSunatData[0].Fecha; // Get the first date
-      sunatData = supabaseSunatData.reduce((acc, item) => {
-        if (item.Fecha) {
-            acc[item.Fecha] = { buy: item.Compra, sell: item.Venta };
-        }
-        return acc;
-      }, {} as SunatData);
+        const supabaseSunatData = sunatResult as SupabaseSunatData[];
+        sunatStartDate = supabaseSunatData[0].Fecha; // Get the first date
+        sunatData = supabaseSunatData.reduce((acc, item) => {
+            // The `Fecha` from Supabase for a `date` type might include time info.
+            // We slice the first 10 characters to ensure a clean 'YYYY-MM-DD' key.
+            const dateKey = item.Fecha.slice(0, 10);
+            if (dateKey) {
+                acc[dateKey] = { buy: item.Compra, sell: item.Venta };
+            }
+            return acc;
+        }, {} as SunatData);
     }
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
