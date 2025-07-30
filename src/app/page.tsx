@@ -143,36 +143,36 @@ export default async function Home() {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
 
-    // Fetch SUNAT data
-    const { data: sunatResult, error: sunatError } = await supabase
-      .from('SUNAT')
-      .select('Date, Purchase, venta');
-    
-    if (sunatError) {
-        console.error("Supabase error (SUNAT):", sunatError);
-        if (!connectionError) { // Solo asigna si no hay un error previo (prioriza el de BANCOS)
-             if (isObjectEmpty(sunatError)) {
-                connectionError = { message: rlsHelpMessage('SUNAT') };
-            } else {
-                connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
-            }
-        }
-    } else if (sunatResult && sunatResult.length > 0) {
-        const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
-        
-        sunatData = supabaseSunatData.reduce((acc, item) => {
-            if (item.Date) {
-                const dateKey = toDateKey(new Date(item.Date));
-                acc[dateKey] = { buy: item.Purchase, sell: item.venta };
-            }
-            return acc;
-        }, {} as SunatData);
+    // Fetch SUNAT data only if there is no previous critical error
+    if (!connectionError) {
+      const { data: sunatResult, error: sunatError } = await supabase
+        .from('SUNAT')
+        .select('Date, Purchase, venta');
+      
+      if (sunatError) {
+          console.error("Supabase error (SUNAT):", sunatError);
+          if (isObjectEmpty(sunatError)) {
+              connectionError = { message: rlsHelpMessage('SUNAT') };
+          } else {
+              connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
+          }
+      } else if (sunatResult && sunatResult.length > 0) {
+          const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
+          
+          sunatData = supabaseSunatData.reduce((acc, item) => {
+              if (item.Date) {
+                  const dateKey = toDateKey(new Date(item.Date));
+                  acc[dateKey] = { buy: item.Purchase, sell: item.venta };
+              }
+              return acc;
+          }, {} as SunatData);
 
-        if (supabaseSunatData[0]?.Date) {
-            sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Date));
-        }
-    } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
-        connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
+          if (supabaseSunatData[0]?.Date) {
+              sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Date));
+          }
+      } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
+          connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
+      }
     }
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
@@ -295,7 +295,5 @@ export default async function Home() {
     </div>
   );
 }
-
-    
 
     
