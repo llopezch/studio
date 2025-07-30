@@ -34,12 +34,6 @@ interface SupabaseBankData {
   Venta: number;
 }
 
-interface SupabaseSunatData {
-  Fecha: string;
-  Compra: number;
-  Venta: number;
-}
-
 // Interface for data used in the components
 interface BankData {
   name: string;
@@ -61,15 +55,41 @@ interface SunatData {
 interface ChartData {
   date: string;
   value: number;
+  fullDate: Date;
 }
+
+// Helper to create mock SUNAT data for the calendar
+const createMockSunatData = () => {
+  const data: SunatData = {};
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  // Generate data for the current month up to today
+  for (let i = 1; i <= today.getDate(); i++) {
+    const date = new Date(year, month, i);
+    // Skip weekends
+    if (date.getDay() === 0 || date.getDay() === 6) continue;
+
+    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    data[dateKey] = {
+      buy: 3.71 + Math.random() * 0.05,
+      sell: 3.76 + Math.random() * 0.05
+    };
+  }
+  return data;
+};
+
 
 export default async function Home() {
   const supabase = createClient();
   let banksData: BankData[] = [];
-  let sunatData: SunatData = {};
   let chartData: ChartData[] = [];
   let connectionError: { message: string } | null = null;
   let hasData = false;
+  
+  // Use mock data for the calendar as requested
+  const sunatData: SunatData = createMockSunatData();
 
   if (supabase) {
     const { data: banksResult, error: banksError } = await supabase
@@ -93,6 +113,7 @@ export default async function Home() {
       hasData = true;
 
       const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
+      
       supabaseData.forEach(item => {
         const dateKey = item.Fecha;
         const dateObj = new Date(item.Fecha + 'T00:00:00Z'); // Force UTC interpretation
@@ -109,31 +130,13 @@ export default async function Home() {
         return {
           date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
           value: parseFloat(avg.toFixed(4)),
+          fullDate: dateObj
         }
-      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
 
     } else if (banksResult && banksResult.length === 0) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
-
-    const { data: sunatResult, error: sunatError } = await supabase
-      .from('SUNAT')
-      .select('Fecha, Compra, Venta');
-    
-    if (sunatError) {
-        console.error("Supabase error (SUNAT):", sunatError);
-         if (!connectionError) {
-            connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
-        }
-    } else if (sunatResult) {
-        const supabaseSunatData = sunatResult as SupabaseSunatData[];
-        sunatData = supabaseSunatData.reduce((acc, item) => {
-            const dateKey = item.Fecha; // Use the YYYY-MM-DD string directly as the key
-            acc[dateKey] = { buy: item.Compra, sell: item.Venta };
-            return acc;
-        }, {} as SunatData);
-    }
-
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
   }

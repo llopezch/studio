@@ -21,7 +21,7 @@ interface ExchangeRateCalendarProps {
   rates: SunatData;
 }
 
-// Helper to format a date to YYYY-MM-DD, always in UTC.
+// Helper to format a date to YYYY-MM-DD in UTC.
 function getUTCDateKey(date: Date): string {
     const year = date.getUTCFullYear();
     const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
