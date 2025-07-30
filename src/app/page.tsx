@@ -35,7 +35,7 @@ interface SupabaseBankData {
 }
 
 interface SupabaseSunatData {
-  Fecha: string; // YYYY-MM-DD string from Supabase
+  Date: string; // YYYY-MM-DD string from Supabase
   Compra: number;
   Venta: number;
 }
@@ -125,8 +125,8 @@ export default async function Home() {
     // Fetch SUNAT data
     const { data: sunatResult, error: sunatError } = await supabase
       .from('SUNAT')
-      .select('Fecha, Compra, Venta')
-      .order('Fecha', { ascending: true }); // Order by date to get the first date
+      .select('Date, Compra, Venta')
+      .order('Date', { ascending: true }); // Order by date to get the first date
     
     if (sunatError) {
       console.error("Supabase error (SUNAT):", sunatError);
@@ -135,11 +135,10 @@ export default async function Home() {
       }
     } else if (sunatResult && sunatResult.length > 0) {
         const supabaseSunatData = sunatResult as SupabaseSunatData[];
-        sunatStartDate = supabaseSunatData[0].Fecha; // Get the first date
+        sunatStartDate = supabaseSunatData[0].Date; // Get the first date
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            // The `Fecha` from Supabase for a `date` type might include time info.
-            // We slice the first 10 characters to ensure a clean 'YYYY-MM-DD' key.
-            const dateKey = item.Fecha.slice(0, 10);
+            // The `Date` from Supabase is a clean 'YYYY-MM-DD' string.
+            const dateKey = item.Date;
             if (dateKey) {
                 acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             }
@@ -267,3 +266,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
