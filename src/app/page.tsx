@@ -77,6 +77,13 @@ const rlsHelpMessage = (tableName: string) => (
   </>
 );
 
+const toDateKey = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
 export default async function Home() {
   const supabase = createClient();
@@ -158,12 +165,12 @@ export default async function Home() {
         
         const firstDate = supabaseSunatData[0].Fecha;
         if(firstDate) {
-            sunatStartDate = firstDate.split('T')[0];
+            sunatStartDate = toDateKey(firstDate);
         }
 
         sunatData = supabaseSunatData.reduce((acc, item) => {
-            const dateKey = item.Fecha ? item.Fecha.split('T')[0] : null;
-            if (dateKey) {
+            if (item.Fecha) {
+                const dateKey = toDateKey(item.Fecha);
                 acc[dateKey] = { buy: item.Compra, sell: item.Venta };
             }
             return acc;

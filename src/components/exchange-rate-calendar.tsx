@@ -39,7 +39,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     // This avoids the hydration mismatch error.
     let initialDate = new Date();
     // If a start date from Supabase is provided, use it.
-    // We add 'T00:00:00Z' to ensure it's parsed as a UTC date.
+    // The startDate is already in YYYY-MM-DD format, so we add 'T00:00:00Z' to ensure it's parsed as a UTC date.
     if (startDate) {
         initialDate = new Date(startDate + 'T00:00:00Z');
     }
@@ -73,7 +73,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   }
 
   const today = new Date(); // Safe to use now, as we're client-side.
-  today.setHours(0, 0, 0, 0);
+  today.setUTCHours(0, 0, 0, 0); // Use UTC for today's date
   const todayKey = toDateKey(today);
 
   // Use UTC methods for month and year to be consistent
