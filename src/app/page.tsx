@@ -51,7 +51,7 @@ interface BankData {
   logo_url: string;
 }
 
-interface SunatData {
+export interface SunatData {
   [key: string]: { // Key is YYYY-MM-DD
     buy: number;
     sell: number;
@@ -77,7 +77,7 @@ const rlsHelpMessage = (tableName: string) => (
   </>
 );
 
-const toDateKey = (dateStr: string): string => {
+export const toDateKey = (dateStr: string | Date): string => {
     // This function needs to be robust to handle dates from Supabase (e.g., '2025-07-30T00:00:00+00:00')
     // and create a simple YYYY-MM-DD key.
     const date = new Date(dateStr);
@@ -165,11 +165,6 @@ export default async function Home() {
     } else if (sunatResult && sunatResult.length > 0) {
         const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
         
-        const firstDate = supabaseSunatData[0].Fecha;
-        if(firstDate) {
-            sunatStartDate = toDateKey(firstDate);
-        }
-
         sunatData = supabaseSunatData.reduce((acc, item) => {
             if (item.Fecha) {
                 const dateKey = toDateKey(item.Fecha);
@@ -177,6 +172,10 @@ export default async function Home() {
             }
             return acc;
         }, {} as SunatData);
+
+        if (supabaseSunatData[0]?.Fecha) {
+            sunatStartDate = toDateKey(supabaseSunatData[0].Fecha);
+        }
     }
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };

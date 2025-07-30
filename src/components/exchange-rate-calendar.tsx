@@ -8,27 +8,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import type { SunatData } from "@/app/page"
+import { toDateKey } from "@/app/page"
 
-interface SunatData {
-  [key: string]: { // Key is YYYY-MM-DD string
-    buy: number;
-    sell: number;
-  }
-}
 
 interface ExchangeRateCalendarProps {
   rates: SunatData;
   startDate?: string | null;
 }
-
-// Helper to format a Date object to a YYYY-MM-DD string, respecting UTC.
-function toDateKey(date: Date): string {
-    const year = date.getUTCFullYear();
-    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-    const day = date.getUTCDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
 
 export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarProps) {
   const [displayDate, setDisplayDate] = React.useState<Date | null>(null)
