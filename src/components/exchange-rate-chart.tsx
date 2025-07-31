@@ -27,7 +27,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/90 dark:bg-black/90 p-2 rounded-md border border-border shadow-lg">
-        <p className="font-bold text-foreground">{payload[0].value.toFixed(4)}</p>
+        <p className="font-bold text-foreground">{payload[0].value.toFixed(3)}</p>
         <p className="text-sm text-muted-foreground">{label}</p>
       </div>
     );
@@ -69,7 +69,7 @@ const ChartComponent = ({ data }: { data: any[] }) => {
                     domain={['dataMin - 0.01', 'dataMax + 0.01']} 
                     axisLine={false} 
                     tickLine={false} 
-                    tickFormatter={(value) => typeof value === 'number' ? value.toFixed(4) : value}
+                    tickFormatter={(value) => typeof value === 'number' ? value.toFixed(3) : value}
                 />
                 <Tooltip
                     cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
@@ -98,7 +98,7 @@ export function ExchangeRateChart({ data }: ExchangeRateChartProps) {
   });
 
   return (
-    <Tabs defaultValue="week">
+    <Tabs defaultValue="month">
       <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b">
         <TabsTrigger value="week" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Última Semana</TabsTrigger>
         <TabsTrigger value="month" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Último Mes</TabsTrigger>
