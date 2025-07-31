@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -14,19 +15,18 @@ interface BankRateCardProps {
 }
 
 function RateChange({ value }: { value: number }) {
-  const isPositive = value > 0;
   const isNegative = value < 0;
-  const isNeutral = value === 0;
+  const isPositive = value >= 0; // Se considera 0 como positivo (verde)
 
-  const Icon = isPositive ? ArrowUp : isNegative ? ArrowDown : null;
+  const Icon = isPositive ? ArrowUp : ArrowDown;
   
   return (
     <div className={cn(
-      "flex items-center text-xs font-semibold gap-1",
-      isPositive && "text-green-600",
-      isNegative && "text-destructive"
+      "flex items-center text-xs font-semibold gap-1 px-2 py-1 rounded-full",
+      isPositive && "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400",
+      isNegative && "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive"
     )}>
-      {Icon && <Icon className="h-3 w-3" />}
+      <Icon className="h-3 w-3" />
       <span>{isPositive ? '+' : ''}{(value || 0).toFixed(4)}</span>
     </div>
   )
@@ -67,5 +67,3 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
     </Card>
   );
 }
-
-    
