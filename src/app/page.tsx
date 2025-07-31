@@ -100,13 +100,11 @@ export default async function Home() {
       .from('BANCOS')
       .select('Banco, Fecha, Compra, Venta');
     
-    if (banksError) {
-      console.error("Supabase error (BANCOS):", banksError);
-      if (isObjectEmpty(banksError)) {
+    if (banksError && isObjectEmpty(banksError)) {
         connectionError = { message: rlsHelpMessage('BANCOS') };
-      } else {
+    } else if (banksError) {
+        console.error("Supabase error (BANCOS):", banksError);
         connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}` };
-      }
     } else if (banksResult && banksResult.length > 0) {
       const allBankData = banksResult as SupabaseBankData[];
 
@@ -120,7 +118,7 @@ export default async function Home() {
         return acc;
       }, {} as { [key: string]: SupabaseBankData[] });
 
-      // 2. Find the two most recent dates
+      // 2. Find the two most recent dates by sorting them
       const sortedDates = Object.keys(dataByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
       const latestDate = sortedDates[0];
       const previousDate = sortedDates[1];
@@ -178,20 +176,18 @@ export default async function Home() {
     }
 
     // Fetch SUNAT data only if there is no previous critical error
-    if (!connectionError) {
+    if (!connectionError || (connectionError && !connectionError.message.toString().includes('BANCOS'))) {
       const { data: sunatResult, error: sunatError } = await supabase
         .from('SUNAT')
         .select('Fecha, Compra, Venta');
       
       console.log('Datos SUNAT desde Supabase:', sunatResult);
 
-      if (sunatError) {
+      if (sunatError && isObjectEmpty(sunatError)) {
+          connectionError = { message: rlsHelpMessage('SUNAT') };
+      } else if (sunatError) {
           console.error("Supabase error (SUNAT):", sunatError);
-          if (isObjectEmpty(sunatError)) {
-              connectionError = { message: rlsHelpMessage('SUNAT') };
-          } else {
-              connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
-          }
+          connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
       } else if (sunatResult && sunatResult.length > 0) {
           const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
           
@@ -300,7 +296,7 @@ export default async function Home() {
             <h2 className="text-2xl font-bold mb-4">Tipos de Cambio por Banco</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {banksData.length > 0 ? banksData.map((bank) => (
-                <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
+                <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { day: 'numeric', month: 'numeric', year: 'numeric', timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
               )) : (
                  <p className="text-muted-foreground col-span-full">No hay datos de bancos para mostrar.</p>
               )}
@@ -332,5 +328,4 @@ export default async function Home() {
   );
 }
 
-    
     

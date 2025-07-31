@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 interface BankRateCardProps {
   name: string;
@@ -13,13 +14,20 @@ interface BankRateCardProps {
 }
 
 function RateChange({ value }: { value: number }) {
-  const isPositive = value >= 0;
+  const isPositive = value > 0;
+  const isNegative = value < 0;
+  const isNeutral = value === 0;
+
+  const Icon = isPositive ? ArrowUp : isNegative ? ArrowDown : null;
+  
   return (
     <div className={cn(
-      "flex items-center text-xs",
-      isPositive ? "text-green-600" : "text-destructive"
+      "flex items-center text-xs font-semibold gap-1",
+      isPositive && "text-green-600",
+      isNegative && "text-destructive"
     )}>
-      {isPositive ? '+' : ''}{(value || 0).toFixed(4)}
+      {Icon && <Icon className="h-3 w-3" />}
+      <span>{isPositive ? '+' : ''}{(value || 0).toFixed(4)}</span>
     </div>
   )
 }
@@ -59,3 +67,5 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
     </Card>
   );
 }
+
+    
