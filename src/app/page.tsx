@@ -149,28 +149,6 @@ export default async function Home() {
       });
       hasData = true;
 
-      const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
-      
-      allBankData.forEach(item => {
-        const dateKey = item.Fecha;
-        const dateObj = new Date(dateKey + 'T00:00:00Z'); // Ensure UTC parsing
-        if (!dailyAverages[dateKey]) {
-          dailyAverages[dateKey] = { sum: 0, count: 0, dateObj: dateObj };
-        }
-        dailyAverages[dateKey].sum += (item.Compra + item.Venta) / 2;
-        dailyAverages[dateKey].count++;
-      });
-      
-      chartData = Object.keys(dailyAverages).map(dateKey => {
-        const avg = dailyAverages[dateKey].sum / dailyAverages[dateKey].count;
-        const dateObj = dailyAverages[dateKey].dateObj;
-        return {
-          date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-          value: parseFloat(avg.toFixed(4)),
-          fullDate: dateObj,
-        }
-      }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
-
     } else if (banksResult && banksResult.length === 0 && !connectionError) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
@@ -202,6 +180,18 @@ export default async function Home() {
           if (supabaseSunatData[0]?.Fecha) {
               sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Fecha + 'T00:00:00Z'));
           }
+
+          // Generate Chart Data from SUNAT's "Compra"
+          chartData = supabaseSunatData.map(item => {
+              const dateObj = new Date(item.Fecha + 'T00:00:00Z');
+              return {
+                  date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+                  value: item.Compra,
+                  fullDate: dateObj,
+              };
+          }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+
+
       } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
           connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
       }
