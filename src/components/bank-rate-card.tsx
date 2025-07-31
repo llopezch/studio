@@ -27,7 +27,7 @@ function RateChange({ value }: { value: number }) {
       isNegative && "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive"
     )}>
       <Icon className="h-3 w-3" />
-      <span>{isPositive ? '+' : ''}{(value || 0).toFixed(4)}</span>
+      <span>{isPositive ? '+' : ''}{(value || 0).toFixed(3)}</span>
     </div>
   )
 }
