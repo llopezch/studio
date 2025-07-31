@@ -36,7 +36,40 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const ChartComponent = ({ data }: { data: any[] }) => {
+// Helper function to get optimized ticks for the chart
+const getTicks = (data: ChartData[], numTicks: number = 5): string[] => {
+    if (!data || data.length === 0) {
+        return [];
+    }
+    const ticks: string[] = [];
+    const dataLength = data.length;
+    // Calculate the step, ensuring we don't divide by zero
+    const step = dataLength > 1 ? Math.floor((dataLength -1) / (numTicks - 1)) : dataLength;
+
+    if (step <= 0) {
+      return data.map(d => d.date);
+    }
+    
+    for (let i = 0; i < dataLength; i += step) {
+        ticks.push(data[i].date);
+    }
+
+    // Ensure the last tick is always included if it wasn't already
+    const lastDate = data[dataLength - 1].date;
+    if (!ticks.includes(lastDate)) {
+        // Replace the second to last tick with the last one to avoid clutter
+        if (ticks.length >= numTicks) {
+           ticks[ticks.length -1] = lastDate;
+        } else {
+           ticks.push(lastDate);
+        }
+    }
+    
+    return ticks;
+};
+
+
+const ChartComponent = ({ data, timeRange }: { data: any[], timeRange: 'week' | 'month' }) => {
     if (!data || data.length === 0) {
         return (
             <div className="h-[300px] w-full flex items-center justify-center text-muted-foreground">
@@ -44,6 +77,9 @@ const ChartComponent = ({ data }: { data: any[] }) => {
             </div>
         )
     }
+
+    const visibleTicks = getTicks(data, timeRange === 'month' ? 5 : 4);
+
     return (
     <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -61,7 +97,8 @@ const ChartComponent = ({ data }: { data: any[] }) => {
                     tick={{ fontSize: 12 }} 
                     axisLine={false} 
                     tickLine={false}
-                    interval={'preserveStartEnd'}
+                    ticks={visibleTicks}
+                    interval="preserveStartEnd"
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
@@ -104,10 +141,10 @@ export function ExchangeRateChart({ data }: ExchangeRateChartProps) {
         <TabsTrigger value="month" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Último Mes</TabsTrigger>
       </TabsList>
       <TabsContent value="week">
-        <ChartComponent data={weeklyData} />
+        <ChartComponent data={weeklyData} timeRange="week" />
       </TabsContent>
       <TabsContent value="month">
-        <ChartComponent data={monthlyData} />
+        <ChartComponent data={monthlyData} timeRange="month" />
       </TabsContent>
     </Tabs>
   )
