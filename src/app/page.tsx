@@ -35,7 +35,7 @@ interface SupabaseBankData {
 }
 
 interface SupabaseSunatData {
-  Fecha: string; 
+  Fecha: string;
   Compra: number;
   Venta: number;
 }
@@ -79,7 +79,10 @@ const rlsHelpMessage = (tableName: string) => (
 
 export const toDateKey = (date: Date): string => {
   // Formato YYYY-MM-DD consistente
-  return date.toISOString().split('T')[0];
+  const year = date.getUTCFullYear();
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export default async function Home() {
@@ -105,21 +108,52 @@ export default async function Home() {
         connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}` };
       }
     } else if (banksResult && banksResult.length > 0) {
-      const supabaseData = banksResult as SupabaseBankData[];
-      banksData = supabaseData.map(item => ({
-        name: item.Banco,
-        created_at: item.Fecha,
-        buy: item.Compra,
-        sell: item.Venta,
-        buy_change: 0, 
-        sell_change: 0,
-        logo_url: logos[item.Banco.toUpperCase()] || 'https://placehold.co/128x32.png',
-      }));
+      const allBankData = banksResult as SupabaseBankData[];
+
+      // 1. Group data by date
+      const dataByDate: { [key: string]: SupabaseBankData[] } = allBankData.reduce((acc, item) => {
+        const date = item.Fecha;
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(item);
+        return acc;
+      }, {} as { [key: string]: SupabaseBankData[] });
+
+      // 2. Find the two most recent dates
+      const sortedDates = Object.keys(dataByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      const latestDate = sortedDates[0];
+      const previousDate = sortedDates[1];
+
+      // 3. Get data for the latest and previous dates
+      const latestData = dataByDate[latestDate] || [];
+      const previousDataMap: { [key: string]: { Compra: number, Venta: number } } = 
+        previousDate ? dataByDate[previousDate].reduce((acc, item) => {
+          acc[item.Banco] = { Compra: item.Compra, Venta: item.Venta };
+          return acc;
+        }, {} as { [key: string]: { Compra: number, Venta: number } }) : {};
+
+      // 4. Calculate changes and build the final banksData array
+      banksData = latestData.map(item => {
+        const prev = previousDataMap[item.Banco];
+        const buyChange = prev ? item.Compra - prev.Compra : 0;
+        const sellChange = prev ? item.Venta - prev.Venta : 0;
+        
+        return {
+          name: item.Banco,
+          created_at: item.Fecha,
+          buy: item.Compra,
+          sell: item.Venta,
+          buy_change: buyChange, 
+          sell_change: sellChange,
+          logo_url: logos[item.Banco.toUpperCase()] || 'https://placehold.co/128x32.png',
+        };
+      });
       hasData = true;
 
       const dailyAverages: { [key: string]: { sum: number, count: number, dateObj: Date } } = {};
       
-      supabaseData.forEach(item => {
+      allBankData.forEach(item => {
         const dateKey = item.Fecha;
         const dateObj = new Date(dateKey + 'T00:00:00Z'); // Ensure UTC parsing
         if (!dailyAverages[dateKey]) {
@@ -298,4 +332,5 @@ export default async function Home() {
   );
 }
 
+    
     
