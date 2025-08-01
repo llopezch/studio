@@ -1,7 +1,7 @@
 
 import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
@@ -387,33 +387,22 @@ export default async function Home() {
                 </CardHeader>
                 <CardContent>
                   {penUsdRates.length > 0 ? (
-                    <>
-                      <div className="mb-4">
-                        <span className="text-3xl font-bold">{latestPenUsdRate?.toFixed(4)}</span>
-                        <span className="text-sm text-muted-foreground ml-2">USD por 1 PEN</span>
-                        {latestPenUsdChange !== null && (
-                            <Badge variant={latestPenUsdChange >= 0 ? "default" : "destructive"} className={`ml-3 bg-opacity-20 text-base ${latestPenUsdChange >= 0 ? 'bg-green-500 text-green-700' : 'bg-red-500 text-red-700'}`}>
-                                {latestPenUsdChange >= 0 ? '+' : ''}{latestPenUsdChange.toFixed(4)}
-                            </Badge>
-                        )}
-                      </div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Hora</TableHead>
-                            <TableHead className="text-right">Valor (USD)</TableHead>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Hora</TableHead>
+                          <TableHead className="text-right">Valor (USD)</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {penUsdRates.slice(0, 8).map((rate) => (
+                          <TableRow key={rate.created_at}>
+                            <TableCell>{formatTime(new Date(rate.created_at))}</TableCell>
+                            <TableCell className="text-right font-medium">{rate.rate.toFixed(4)}</TableCell>
                           </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {penUsdRates.slice(0, 8).map((rate) => (
-                            <TableRow key={rate.created_at}>
-                              <TableCell>{formatTime(new Date(rate.created_at))}</TableCell>
-                              <TableCell className="text-right font-medium">{rate.rate.toFixed(4)}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </>
+                        ))}
+                      </TableBody>
+                    </Table>
                   ) : (
                     <p className="text-muted-foreground text-center py-8">No hay datos de PEN a USD para mostrar.</p>
                   )}
@@ -424,6 +413,19 @@ export default async function Home() {
               <Card>
                 <CardHeader>
                   <CardTitle>Evolución del Tipo de Cambio (PEN a USD)</CardTitle>
+                   {penUsdRates.length > 0 && (
+                      <CardDescription>
+                         <div className="flex items-center gap-2 text-base sm:text-lg">
+                            <span className="text-2xl sm:text-3xl font-bold text-foreground">{latestPenUsdRate?.toFixed(4)}</span>
+                            <span className="text-muted-foreground">USD por 1 PEN</span>
+                            {latestPenUsdChange !== null && (
+                                <Badge variant={latestPenUsdChange >= 0 ? "default" : "destructive"} className={`ml-1 text-sm ${latestPenUsdChange >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    {latestPenUsdChange >= 0 ? '+' : ''}{latestPenUsdChange.toFixed(4)}
+                                </Badge>
+                            )}
+                         </div>
+                      </CardDescription>
+                   )}
                 </CardHeader>
                 <CardContent className="pt-0">
                   <PenUsdChart data={penUsdChartData} />
