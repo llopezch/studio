@@ -26,42 +26,6 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// Helper function to get unique, spaced-out ticks for the X-axis
-const getUniqueXTicks = (data: PenUsdChartData[], numTicks: number = 5): PenUsdChartData[] => {
-    if (!data || data.length === 0) return [];
-    
-    const uniqueDateMap = new Map<string, PenUsdChartData>();
-    data.forEach(d => {
-        if (!uniqueDateMap.has(d.date)) {
-            uniqueDateMap.set(d.date, d);
-        }
-    });
-    const uniqueDates = Array.from(uniqueDateMap.values());
-    const dataLength = uniqueDates.length;
-
-    if (dataLength <= numTicks) {
-        return uniqueDates;
-    }
-
-    const ticks: PenUsdChartData[] = [];
-    const step = Math.max(1, Math.floor((dataLength - 1) / (numTicks - 1)));
-    
-    for (let i = 0; i < dataLength; i += step) {
-        ticks.push(uniqueDates[i]);
-    }
-
-    const lastDate = uniqueDates[dataLength - 1];
-    if (ticks[ticks.length - 1]?.date !== lastDate.date) {
-        if (ticks.length >= numTicks) {
-           ticks[ticks.length -1] = lastDate;
-        } else {
-           ticks.push(lastDate);
-        }
-    }
-    
-    return ticks;
-};
-
 const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
     if (!data || data.length === 0) {
         return (
@@ -70,14 +34,12 @@ const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
             </div>
         )
     }
-
-    const xTicks = getUniqueXTicks(data, 5);
-
-    // Calculate Y-axis domain dynamically based on the provided data
+    
+    // Calculate Y-axis domain dynamically based on the currently visible data
     const yValues = data.map(item => item.value);
     const yMin = Math.min(...yValues);
     const yMax = Math.max(...yValues);
-    const yPadding = (yMax - yMin) * 0.1 || 0.001; 
+    const yPadding = (yMax - yMin) * 0.1 || 0.0001; 
     
     const yDomain: [number, number] = [yMin - yPadding, yMax + yPadding];
 
@@ -98,8 +60,7 @@ const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
                     tick={{ fontSize: 12 }} 
                     axisLine={false} 
                     tickLine={false}
-                    ticks={xTicks.map(t => t.date)}
-                    interval="preserveStartEnd"
+                    interval="equidistantPreserveStart"
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
@@ -123,10 +84,13 @@ const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
 export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
   const now = new Date();
   
-  const filterData = (days: number) => {
+  const filterData = (days: number): PenUsdChartData[] => {
     const pastDate = new Date();
     pastDate.setDate(now.getDate() - days);
-    return data.filter(item => item.fullDate >= pastDate);
+    return data.filter(item => {
+        const itemDate = new Date(item.fullDate);
+        return itemDate >= pastDate && itemDate <= now;
+    });
   }
 
   const weeklyData = filterData(7);

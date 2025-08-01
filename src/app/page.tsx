@@ -29,9 +29,9 @@ const generateMockPenUsdData = () => {
     const now = new Date();
     let rate = 0.2750;
     // Generate data for the last 365 days
-    for (let i = 365; i >= 0; i--) { 
+    for (let i = 365; i >= 0; i--) {
         const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000); // One entry per day
-        rate += (Math.random() - 0.5) * 0.0005; 
+        rate += (Math.random() - 0.5) * 0.0005;
         data.push({
             created_at: date.toISOString(),
             rate: parseFloat(rate.toFixed(5)),
@@ -256,7 +256,7 @@ export default async function Home() {
       penUsdChartData = penUsdRates.map(item => {
           const dateObj = new Date(item.created_at);
           return {
-              date: dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }),
+              date: dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }).replace('.',''),
               fullDateStr: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
               value: item.rate,
               fullDate: dateObj,
