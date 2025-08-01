@@ -1,5 +1,6 @@
 
-import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, CircleDollarSign } from 'lucide-react';
+import * as React from 'react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, CircleDollarSign, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
@@ -11,6 +12,9 @@ import { Terminal } from 'lucide-react';
 import { PenUsdChart } from '@/components/pen-usd-chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+
 
 const mockBanksData = [
     { name: 'BCP', created_at: new Date().toISOString(), buy: 3.751, sell: 3.791, buy_change: 0.002, sell_change: -0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg' },
@@ -24,8 +28,8 @@ const generateMockPenUsdData = () => {
     const data = [];
     const now = new Date();
     let rate = 0.2750;
-    for (let i = 365 * 2 * 2; i >= 0; i--) { // Generate data for ~2 years, every 12 hours
-        const date = new Date(now.getTime() - i * 12 * 60 * 60 * 1000); 
+    for (let i = 20 * 2; i >= 0; i--) { // Generate data for ~10 hours, every 30 mins
+        const date = new Date(now.getTime() - i * 30 * 60 * 1000); 
         rate += (Math.random() - 0.5) * 0.001; 
         data.push({
             created_at: date.toISOString(),
@@ -118,6 +122,11 @@ const formatTime = (date: Date) => {
     return date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
+interface PenUsdRateWithChange extends SupabasePenUsdData {
+    change: number;
+}
+
+
 export default async function Home() {
   const supabase = createClient();
   let banksData: BankData[] = [];
@@ -127,7 +136,7 @@ export default async function Home() {
   let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
   
-  let penUsdRates: SupabasePenUsdData[] = mockPenUsdRates;
+  let penUsdRates: PenUsdRateWithChange[] = [];
   let penUsdChartData: PenUsdChartData[] = [];
   let latestPenUsdRate: number | null = null;
   let latestPenUsdChange: number | null = null;
@@ -214,27 +223,21 @@ export default async function Home() {
       }
     }
     
-    // NOTE: This section for fetching from Supabase is commented out to use mock data
-    /*
-    const { data: penUsdResult, error: penUsdError } = await supabase
-        .from('PEN_USD_RATES')
-        .select('created_at, rate')
-        .order('created_at', { ascending: false });
-
-    if (penUsdError && isObjectEmpty(penUsdError)) {
-        connectionError = { message: rlsHelpMessage('PEN_USD_RATES') };
-    } else if (penUsdError) {
-        console.error("Supabase error (PEN_USD_RATES):", penUsdError);
-        if (!connectionError) {
-            connectionError = { message: `Error al consultar la tabla 'PEN_USD_RATES': ${penUsdError.message}` };
-        }
-    } else if (penUsdResult && penUsdResult.length > 0) {
-        penUsdRates = penUsdResult;
-    }
-    */
+    const rawPenUsdRates = mockPenUsdRates;
+    penUsdRates = rawPenUsdRates.map((rate, index) => {
+        const previousRate = rawPenUsdRates[index + 1];
+        const change = previousRate ? rate.rate - previousRate.rate : 0;
+        return { ...rate, change };
+    });
 
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
+     const rawPenUsdRates = mockPenUsdRates;
+     penUsdRates = rawPenUsdRates.map((rate, index) => {
+        const previousRate = rawPenUsdRates[index + 1];
+        const change = previousRate ? rate.rate - previousRate.rate : 0;
+        return { ...rate, change };
+     });
   }
 
   if (penUsdRates.length > 0) {
@@ -242,7 +245,7 @@ export default async function Home() {
           const dateObj = new Date(item.created_at);
           return {
               date: dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }),
-              fullDateStr: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
+              fullDateStr: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
               value: item.rate,
               fullDate: dateObj,
           };
@@ -368,7 +371,7 @@ export default async function Home() {
               </Card>
             </div>
           </section>
-
+          
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-1">
               <Card>
@@ -378,26 +381,32 @@ export default async function Home() {
                     <span>Cambio PEN a USD</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   {penUsdRates.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Hora</TableHead>
-                          <TableHead className="text-right">Valor (USD)</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {penUsdRates.slice(0, 8).map((rate) => (
-                          <TableRow key={rate.created_at}>
-                            <TableCell>{formatTime(new Date(rate.created_at))}</TableCell>
-                            <TableCell className="text-right font-medium">{rate.rate.toFixed(4)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="flex flex-col">
+                      {penUsdRates.slice(0, 8).map((rate, index) => (
+                        <React.Fragment key={rate.created_at}>
+                          <div className="flex items-center justify-between p-4 hover:bg-muted/50">
+                            <div>
+                              <div className="font-bold text-base">{formatTime(new Date(rate.created_at))}</div>
+                              <div className="text-sm text-muted-foreground">PEN a USD</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold text-base">{rate.rate.toFixed(4)}</div>
+                               <Badge variant={rate.change >= 0 ? 'default' : 'destructive'} className={cn(
+                                "text-xs font-semibold px-1.5 py-0.5 mt-1 rounded-md",
+                                rate.change > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                               )}>
+                                {rate.change >= 0 ? '+' : ''}{rate.change.toFixed(4)}
+                              </Badge>
+                            </div>
+                          </div>
+                          {index < 7 && <Separator />}
+                        </React.Fragment>
+                      ))}
+                    </div>
                   ) : (
-                    <p className="text-muted-foreground text-center py-8">No hay datos de PEN a USD para mostrar.</p>
+                    <p className="text-muted-foreground text-center py-8 px-4">No hay datos de PEN a USD para mostrar.</p>
                   )}
                 </CardContent>
               </Card>
@@ -405,7 +414,7 @@ export default async function Home() {
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
+                   <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
                    {penUsdRates.length > 0 && (
                       <CardDescription>
                          <div className="flex items-center gap-2 text-base sm:text-lg">
