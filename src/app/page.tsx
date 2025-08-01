@@ -20,24 +20,22 @@ const mockBanksData = [
     { name: 'Banco de la Nación', created_at: new Date().toISOString(), buy: 3.73, sell: 3.78, buy_change: 0.001, sell_change: 0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg' },
 ];
 
-// START: Mock data for PEN to USD
 const generateMockPenUsdData = () => {
     const data = [];
     const now = new Date();
     let rate = 0.2750;
-    for (let i = 0; i < 365 * 2; i++) { // Generate data for ~2 years
-        const date = new Date(now.getTime() - i * 30 * 60 * 1000); // every 30 minutes
-        rate += (Math.random() - 0.5) * 0.0005; // Small random fluctuation
+    for (let i = 365 * 2 * 2; i >= 0; i--) { // Generate data for ~2 years, every 12 hours
+        const date = new Date(now.getTime() - i * 12 * 60 * 60 * 1000); 
+        rate += (Math.random() - 0.5) * 0.001; 
         data.push({
             created_at: date.toISOString(),
             rate: parseFloat(rate.toFixed(5)),
         });
     }
-    return data;
+    return data.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 }
 
 const mockPenUsdRates = generateMockPenUsdData();
-// END: Mock data for PEN to USD
 
 const logos: Record<string, string> = {
     'BCP': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg',
@@ -48,10 +46,9 @@ const logos: Record<string, string> = {
     'BANCO DE LA NACION': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg',
 };
 
-// Interface for data coming from Supabase
 interface SupabaseBankData {
   Banco: string;
-  Fecha: string; // YYYY-MM-DD
+  Fecha: string; 
   Compra: number;
   Venta: number;
 }
@@ -67,7 +64,6 @@ interface SupabasePenUsdData {
   rate: number;
 }
 
-// Interface for data used in the components
 interface BankData {
   name: string;
   created_at: string;
@@ -79,7 +75,7 @@ interface BankData {
 }
 
 export interface SunatData {
-  [key: string]: { // Key is YYYY-MM-DD
+  [key: string]: { 
     buy: number;
     sell: number;
   }
@@ -92,7 +88,8 @@ interface ChartData {
 }
 
 export interface PenUsdChartData {
-  date: string;
+  date: string; // Short format for X-axis
+  fullDateStr: string; // Long format for Tooltip
   value: number;
   fullDate: Date;
 }
@@ -111,7 +108,6 @@ const rlsHelpMessage = (tableName: string) => (
 );
 
 export const toDateKey = (date: Date): string => {
-  // Formato YYYY-MM-DD consistente
   const year = date.getUTCFullYear();
   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
   const day = date.getUTCDate().toString().padStart(2, '0');
@@ -131,7 +127,6 @@ export default async function Home() {
   let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
   
-  // PEN to USD Data (using mock data for now)
   let penUsdRates: SupabasePenUsdData[] = mockPenUsdRates;
   let penUsdChartData: PenUsdChartData[] = [];
   let latestPenUsdRate: number | null = null;
@@ -139,7 +134,6 @@ export default async function Home() {
 
 
   if (supabase) {
-    // Fetch Banks Data
     const { data: banksResult, error: banksError } = await supabase
       .from('BANCOS')
       .select('Banco, Fecha, Compra, Venta');
@@ -186,7 +180,6 @@ export default async function Home() {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
 
-    // Fetch SUNAT data only if there is no previous critical error
     if (!connectionError || (connectionError && !connectionError.message.toString().includes('BANCOS'))) {
       const { data: sunatResult, error: sunatError } = await supabase.from('SUNAT').select('Fecha, Compra, Venta');
       
@@ -222,7 +215,6 @@ export default async function Home() {
     }
     
     // NOTE: This section for fetching from Supabase is commented out to use mock data
-    // When ready, you can uncomment this and remove the mock data initialization
     /*
     const { data: penUsdResult, error: penUsdError } = await supabase
         .from('PEN_USD_RATES')
@@ -249,7 +241,8 @@ export default async function Home() {
       penUsdChartData = penUsdRates.map(item => {
           const dateObj = new Date(item.created_at);
           return {
-              date: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
+              date: dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }),
+              fullDateStr: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
               value: item.rate,
               fullDate: dateObj,
           };
@@ -376,7 +369,7 @@ export default async function Home() {
             </div>
           </section>
 
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-1">
               <Card>
                 <CardHeader>
@@ -412,7 +405,7 @@ export default async function Home() {
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Evolución del Tipo de Cambio (PEN a USD)</CardTitle>
+                  <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
                    {penUsdRates.length > 0 && (
                       <CardDescription>
                          <div className="flex items-center gap-2 text-base sm:text-lg">

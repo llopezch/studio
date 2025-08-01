@@ -19,7 +19,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-white/90 dark:bg-black/90 p-2 rounded-md border border-border shadow-lg">
         <p className="font-bold text-foreground">1 PEN = {payload[0].value.toFixed(4)} USD</p>
-        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-sm text-muted-foreground">{payload[0].payload.fullDateStr}</p>
       </div>
     );
   }
@@ -89,7 +89,7 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                     cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
                     content={<CustomTooltip />}
                 />
-                <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPenUsd)" activeDot={{ r: 6 }}/>
+                <Area type="linear" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPenUsd)" activeDot={{ r: 6 }}/>
             </AreaChart>
         </ResponsiveContainer>
     </div>
