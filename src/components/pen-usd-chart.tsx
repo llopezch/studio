@@ -88,7 +88,8 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                     domain={['dataMin - 0.001', 'dataMax + 0.001']} 
                     axisLine={false} 
                     tickLine={false} 
-                    tickFormatter={(value) => typeof value === 'number' ? value.toFixed(4) : value}
+                    tickCount={7}
+                    tickFormatter={(value) => typeof value === 'number' ? value.toFixed(3) : value}
                 />
                 <Tooltip
                     cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
