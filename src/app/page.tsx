@@ -12,7 +12,6 @@ import { Terminal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { HistoricalRateChart } from '@/components/historical-rate-chart';
 
 
 const mockBanksData = [
@@ -148,9 +147,6 @@ export default async function Home() {
   let hasData = false;
   
   let penUsdRates: PenUsdRateWithChange[] = [];
-  let penUsdChartData: HistoricalRateChartData[] = [];
-  let latestPenUsdRate: number | null = null;
-  let latestPenUsdChange: number | null = null;
 
 
   if (supabase) {
@@ -249,26 +245,6 @@ export default async function Home() {
         const change = previousRate ? rate.rate - previousRate.rate : 0;
         return { ...rate, change };
      });
-  }
-
-  if (penUsdRates.length > 0) {
-    penUsdChartData = penUsdRates.map(item => {
-        const dateObj = new Date(item.created_at);
-        return {
-            date: dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }).replace('.',''),
-            fullDateStr: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
-            value: item.rate,
-            fullDate: dateObj,
-        };
-    }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
-
-    if (penUsdRates.length >= 2) {
-        latestPenUsdRate = penUsdRates[0].rate;
-        latestPenUsdChange = penUsdRates[0].rate - penUsdRates[1].rate;
-    } else if (penUsdRates.length === 1) {
-        latestPenUsdRate = penUsdRates[0].rate;
-        latestPenUsdChange = 0;
-    }
   }
 
   if (!hasData && !connectionError) {
@@ -423,27 +399,7 @@ export default async function Home() {
               </Card>
             </div>
             <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                   <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
-                   {penUsdRates.length > 0 && (
-                      <CardDescription>
-                         <div className="flex items-center gap-2 text-base sm:text-lg">
-                            <span className="text-2xl sm:text-3xl font-bold text-foreground">{latestPenUsdRate?.toFixed(4)}</span>
-                            <span className="text-muted-foreground">USD por 1 PEN</span>
-                            {latestPenUsdChange !== null && (
-                                <Badge variant={latestPenUsdChange >= 0 ? "default" : "destructive"} className={`ml-1 text-sm ${latestPenUsdChange >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {latestPenUsdChange >= 0 ? '+' : ''}{latestPenUsdChange.toFixed(4)}
-                                </Badge>
-                            )}
-                         </div>
-                      </CardDescription>
-                   )}
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <HistoricalRateChart data={penUsdChartData} />
-                </CardContent>
-              </Card>
+              {/* The chart has been removed from here */}
             </div>
           </section>
         </main>
