@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, CircleDollarSign, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
@@ -9,11 +9,10 @@ import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
 import { createClient } from '@/lib/supabase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
-import { PenUsdChart } from '@/components/pen-usd-chart';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { HistoricalRateChart } from '@/components/historical-rate-chart';
 
 
 const mockBanksData = [
@@ -103,11 +102,11 @@ interface ChartData {
   fullDate: Date;
 }
 
-export interface PenUsdChartData {
-  date: string; // Short format for X-axis
-  fullDateStr: string; // Long format for Tooltip
+export interface HistoricalRateChartData {
+  date: string;
   value: number;
   fullDate: Date;
+  fullDateStr: string;
 }
 
 const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
@@ -149,7 +148,7 @@ export default async function Home() {
   let hasData = false;
   
   let penUsdRates: PenUsdRateWithChange[] = [];
-  let penUsdChartData: PenUsdChartData[] = [];
+  let penUsdChartData: HistoricalRateChartData[] = [];
   let latestPenUsdRate: number | null = null;
   let latestPenUsdChange: number | null = null;
 
@@ -253,23 +252,23 @@ export default async function Home() {
   }
 
   if (penUsdRates.length > 0) {
-      penUsdChartData = penUsdRates.map(item => {
-          const dateObj = new Date(item.created_at);
-          return {
-              date: dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }).replace('.',''),
-              fullDateStr: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
-              value: item.rate,
-              fullDate: dateObj,
-          };
-      }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+    penUsdChartData = penUsdRates.map(item => {
+        const dateObj = new Date(item.created_at);
+        return {
+            date: dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }).replace('.',''),
+            fullDateStr: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
+            value: item.rate,
+            fullDate: dateObj,
+        };
+    }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
 
-      if (penUsdRates.length >= 2) {
-          latestPenUsdRate = penUsdRates[0].rate;
-          latestPenUsdChange = penUsdRates[0].rate - penUsdRates[1].rate;
-      } else if (penUsdRates.length === 1) {
-          latestPenUsdRate = penUsdRates[0].rate;
-          latestPenUsdChange = 0;
-      }
+    if (penUsdRates.length >= 2) {
+        latestPenUsdRate = penUsdRates[0].rate;
+        latestPenUsdChange = penUsdRates[0].rate - penUsdRates[1].rate;
+    } else if (penUsdRates.length === 1) {
+        latestPenUsdRate = penUsdRates[0].rate;
+        latestPenUsdChange = 0;
+    }
   }
 
   if (!hasData && !connectionError) {
@@ -442,7 +441,7 @@ export default async function Home() {
                    )}
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <PenUsdChart data={penUsdChartData} />
+                  <HistoricalRateChart data={penUsdChartData} />
                 </CardContent>
               </Card>
             </div>
