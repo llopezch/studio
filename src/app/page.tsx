@@ -30,7 +30,7 @@ const generateMockPenUsdData = () => {
     let rate = 0.2750;
     for (let i = 20 * 2; i >= 0; i--) { // Generate data for ~10 hours, every 30 mins
         const date = new Date(now.getTime() - i * 30 * 60 * 1000); 
-        rate += (Math.random() - 0.5) * 0.001; 
+        rate += (Math.random() - 0.5) * 0.0001; 
         data.push({
             created_at: date.toISOString(),
             rate: parseFloat(rate.toFixed(5)),
@@ -393,15 +393,15 @@ export default async function Home() {
                             </div>
                             <div className="text-right">
                               <div className="font-bold text-base">{rate.rate.toFixed(4)}</div>
-                               <Badge variant={rate.change >= 0 ? 'default' : 'destructive'} className={cn(
-                                "text-xs font-semibold px-1.5 py-0.5 mt-1 rounded-md",
-                                rate.change > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                               <Badge variant='outline' className={cn(
+                                "text-xs font-semibold px-2 py-1 mt-1 rounded-md border-transparent",
+                                rate.change >= 0 ? 'bg-gray-900 text-white' : 'bg-gray-500 text-white'
                                )}>
                                 {rate.change >= 0 ? '+' : ''}{rate.change.toFixed(4)}
                               </Badge>
                             </div>
                           </div>
-                          {index < 7 && <Separator />}
+                          {index < 7 && penUsdRates.length > 1 && <Separator />}
                         </React.Fragment>
                       ))}
                     </div>
@@ -440,3 +440,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
