@@ -28,21 +28,30 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const getTicks = (data: PenUsdChartData[], numTicks: number = 5): string[] => {
     if (!data || data.length === 0) return [];
+
+    // Create a Set of unique dates to avoid duplicates
+    const uniqueDates = [...new Set(data.map(d => d.date))];
+    const dataLength = uniqueDates.length;
+    if (dataLength <= numTicks) {
+        return uniqueDates;
+    }
+
     const ticks: string[] = [];
-    const dataLength = data.length;
-    const step = dataLength > 1 ? Math.floor((dataLength -1) / (numTicks - 1)) : dataLength;
-    if (step <= 0) return data.map(d => d.date);
+    const step = Math.floor((dataLength -1) / (numTicks - 1));
+    
     for (let i = 0; i < dataLength; i += step) {
-        ticks.push(data[i].date);
+        ticks.push(uniqueDates[i]);
     }
-    const lastDate = data[dataLength - 1].date;
+
+    const lastDate = uniqueDates[dataLength - 1];
     if (!ticks.includes(lastDate)) {
-        if (ticks.length >= numTicks) {
-           ticks[ticks.length -1] = lastDate;
-        } else {
-           ticks.push(lastDate);
-        }
+      if (ticks.length >= numTicks) {
+        ticks[ticks.length - 1] = lastDate;
+      } else {
+        ticks.push(lastDate)
+      }
     }
+    
     return ticks;
 };
 
@@ -56,11 +65,18 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
     }
 
     const visibleTicks = getTicks(data, 5);
-    const tickFormatter = (tick: string, index: number) => {
-      return tick;
-    }
-    const uniqueTicks = visibleTicks.map((tick, index) => ({ value: tick, key: `${tick}-${index}` }));
-
+    
+    // This is the correct way to render ticks to avoid key issues
+    const renderTicks = (tickProps: any) => {
+      const { x, y, payload } = tickProps;
+      return (
+        <g transform={`translate(${x},${y})`}>
+          <text x={0} y={0} dy={16} textAnchor="end" fill="#666" transform="rotate(0)">
+            {payload.value}
+          </text>
+        </g>
+      );
+    };
 
     return (
     <div className="h-[350px] w-full">
@@ -81,7 +97,7 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                     tickLine={false}
                     ticks={visibleTicks}
                     interval="preserveStartEnd"
-                    tickFormatter={tickFormatter}
+                    tickFormatter={(value) => value}
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
