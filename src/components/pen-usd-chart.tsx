@@ -26,17 +26,25 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-const getUniqueTicks = (data: PenUsdChartData[], numTicks: number = 5): string[] => {
+// Helper function to get unique, spaced-out ticks for the X-axis
+const getUniqueXTicks = (data: PenUsdChartData[], numTicks: number = 5): PenUsdChartData[] => {
     if (!data || data.length === 0) return [];
     
-    const uniqueDates = [...new Set(data.map(d => d.date))];
+    // Create a map to get the first entry for each unique date string
+    const uniqueDateMap = new Map<string, PenUsdChartData>();
+    data.forEach(d => {
+        if (!uniqueDateMap.has(d.date)) {
+            uniqueDateMap.set(d.date, d);
+        }
+    });
+    const uniqueDates = Array.from(uniqueDateMap.values());
     const dataLength = uniqueDates.length;
 
     if (dataLength <= numTicks) {
         return uniqueDates;
     }
 
-    const ticks: string[] = [];
+    const ticks: PenUsdChartData[] = [];
     const step = Math.max(1, Math.floor((dataLength - 1) / (numTicks - 1)));
     
     for (let i = 0; i < dataLength; i += step) {
@@ -44,7 +52,7 @@ const getUniqueTicks = (data: PenUsdChartData[], numTicks: number = 5): string[]
     }
 
     const lastDate = uniqueDates[dataLength - 1];
-    if (ticks[ticks.length - 1] !== lastDate) {
+    if (ticks[ticks.length - 1].date !== lastDate.date) {
         // Replace the second to last tick with the last one to avoid clutter
         if (ticks.length >= numTicks) {
            ticks[ticks.length -1] = lastDate;
@@ -65,7 +73,15 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
         )
     }
 
-    const visibleTicks = getUniqueTicks(data, 5);
+    const xTicks = getUniqueXTicks(data, 5);
+
+    // Calculate Y-axis domain
+    const yValues = data.map(item => item.value);
+    const yMin = Math.min(...yValues);
+    const yMax = Math.max(...yValues);
+    const yPadding = (yMax - yMin) * 0.1 || 0.001; // Add padding or a small default
+    
+    const yDomain: [number, number] = [yMin - yPadding, yMax + yPadding];
 
     return (
     <div className="h-[350px] w-full">
@@ -77,30 +93,30 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                     </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis 
                     dataKey="date" 
                     stroke="hsl(var(--muted-foreground))" 
                     tick={{ fontSize: 12 }} 
                     axisLine={false} 
                     tickLine={false}
-                    ticks={visibleTicks}
+                    ticks={xTicks.map(t => t.date)}
                     interval="preserveStartEnd"
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
                     tick={{ fontSize: 12 }} 
-                    domain={['dataMin - 0.001', 'dataMax + 0.001']} 
+                    domain={yDomain}
                     axisLine={false} 
                     tickLine={false} 
-                    tickCount={7}
+                    tickCount={6}
                     tickFormatter={(value) => typeof value === 'number' ? value.toFixed(3) : value}
                 />
                 <Tooltip
                     cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
                     content={<CustomTooltip />}
                 />
-                <Area type="linear" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPenUsd)" activeDot={{ r: 6 }}/>
+                <Area type="linear" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPenUsd)" activeDot={{ r: 6 }} dot={false}/>
             </AreaChart>
         </ResponsiveContainer>
     </div>
