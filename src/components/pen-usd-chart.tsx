@@ -30,7 +30,6 @@ const CustomTooltip = ({ active, payload }: any) => {
 const getUniqueXTicks = (data: PenUsdChartData[], numTicks: number = 5): PenUsdChartData[] => {
     if (!data || data.length === 0) return [];
     
-    // Create a map to get the first entry for each unique date string
     const uniqueDateMap = new Map<string, PenUsdChartData>();
     data.forEach(d => {
         if (!uniqueDateMap.has(d.date)) {
@@ -52,8 +51,7 @@ const getUniqueXTicks = (data: PenUsdChartData[], numTicks: number = 5): PenUsdC
     }
 
     const lastDate = uniqueDates[dataLength - 1];
-    if (ticks[ticks.length - 1].date !== lastDate.date) {
-        // Replace the second to last tick with the last one to avoid clutter
+    if (ticks[ticks.length - 1]?.date !== lastDate.date) {
         if (ticks.length >= numTicks) {
            ticks[ticks.length -1] = lastDate;
         } else {
@@ -64,7 +62,7 @@ const getUniqueXTicks = (data: PenUsdChartData[], numTicks: number = 5): PenUsdC
     return ticks;
 };
 
-const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRange: string }) => {
+const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
     if (!data || data.length === 0) {
         return (
             <div className="h-[350px] w-full flex items-center justify-center text-muted-foreground">
@@ -75,11 +73,11 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
 
     const xTicks = getUniqueXTicks(data, 5);
 
-    // Calculate Y-axis domain
+    // Calculate Y-axis domain dynamically based on the provided data
     const yValues = data.map(item => item.value);
     const yMin = Math.min(...yValues);
     const yMax = Math.max(...yValues);
-    const yPadding = (yMax - yMin) * 0.1 || 0.001; // Add padding or a small default
+    const yPadding = (yMax - yMin) * 0.1 || 0.001; 
     
     const yDomain: [number, number] = [yMin - yPadding, yMax + yPadding];
 
@@ -110,7 +108,7 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                     axisLine={false} 
                     tickLine={false} 
                     tickCount={6}
-                    tickFormatter={(value) => typeof value === 'number' ? value.toFixed(3) : value}
+                    tickFormatter={(value) => typeof value === 'number' ? value.toFixed(3) : ""}
                 />
                 <Tooltip
                     cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
@@ -145,16 +143,16 @@ export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
         <TabsTrigger value="year" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">1 Año</TabsTrigger>
       </TabsList>
       <TabsContent value="week">
-        <ChartComponent data={weeklyData} timeRange="week" />
+        <ChartComponent data={weeklyData} />
       </TabsContent>
       <TabsContent value="month">
-        <ChartComponent data={monthlyData} timeRange="month" />
+        <ChartComponent data={monthlyData} />
       </TabsContent>
       <TabsContent value="6months">
-        <ChartComponent data={sixMonthsData} timeRange="6months" />
+        <ChartComponent data={sixMonthsData} />
       </TabsContent>
       <TabsContent value="year">
-        <ChartComponent data={yearlyData} timeRange="year" />
+        <ChartComponent data={yearlyData} />
       </TabsContent>
     </Tabs>
   )
