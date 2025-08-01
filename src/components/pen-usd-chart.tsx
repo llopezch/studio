@@ -56,6 +56,11 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
     }
 
     const visibleTicks = getTicks(data, 5);
+    const tickFormatter = (tick: string, index: number) => {
+      return tick;
+    }
+    const uniqueTicks = visibleTicks.map((tick, index) => ({ value: tick, key: `${tick}-${index}` }));
+
 
     return (
     <div className="h-[350px] w-full">
@@ -76,6 +81,7 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                     tickLine={false}
                     ticks={visibleTicks}
                     interval="preserveStartEnd"
+                    tickFormatter={tickFormatter}
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
