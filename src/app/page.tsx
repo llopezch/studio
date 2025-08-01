@@ -20,6 +20,25 @@ const mockBanksData = [
     { name: 'Banco de la Nación', created_at: new Date().toISOString(), buy: 3.73, sell: 3.78, buy_change: 0.001, sell_change: 0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg' },
 ];
 
+// START: Mock data for PEN to USD
+const generateMockPenUsdData = () => {
+    const data = [];
+    const now = new Date();
+    let rate = 0.2750;
+    for (let i = 0; i < 365 * 2; i++) { // Generate data for ~2 years
+        const date = new Date(now.getTime() - i * 30 * 60 * 1000); // every 30 minutes
+        rate += (Math.random() - 0.5) * 0.0005; // Small random fluctuation
+        data.push({
+            created_at: date.toISOString(),
+            rate: parseFloat(rate.toFixed(5)),
+        });
+    }
+    return data;
+}
+
+const mockPenUsdRates = generateMockPenUsdData();
+// END: Mock data for PEN to USD
+
 const logos: Record<string, string> = {
     'BCP': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg',
     'INTERBANCARIO': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg',
@@ -111,10 +130,13 @@ export default async function Home() {
   let sunatStartDate: string | null = null;
   let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
-  let penUsdRates: SupabasePenUsdData[] = [];
+  
+  // PEN to USD Data (using mock data for now)
+  let penUsdRates: SupabasePenUsdData[] = mockPenUsdRates;
   let penUsdChartData: PenUsdChartData[] = [];
   let latestPenUsdRate: number | null = null;
   let latestPenUsdChange: number | null = null;
+
 
   if (supabase) {
     // Fetch Banks Data
@@ -198,8 +220,10 @@ export default async function Home() {
           connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
       }
     }
-
-    // Fetch PEN to USD historical data
+    
+    // NOTE: This section for fetching from Supabase is commented out to use mock data
+    // When ready, you can uncomment this and remove the mock data initialization
+    /*
     const { data: penUsdResult, error: penUsdError } = await supabase
         .from('PEN_USD_RATES')
         .select('created_at, rate')
@@ -209,33 +233,35 @@ export default async function Home() {
         connectionError = { message: rlsHelpMessage('PEN_USD_RATES') };
     } else if (penUsdError) {
         console.error("Supabase error (PEN_USD_RATES):", penUsdError);
-        // We don't overwrite other connection errors
         if (!connectionError) {
             connectionError = { message: `Error al consultar la tabla 'PEN_USD_RATES': ${penUsdError.message}` };
         }
     } else if (penUsdResult && penUsdResult.length > 0) {
         penUsdRates = penUsdResult;
-        
-        penUsdChartData = penUsdResult.map(item => {
-            const dateObj = new Date(item.created_at);
-            return {
-                date: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
-                value: item.rate,
-                fullDate: dateObj,
-            };
-        }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
-
-        if (penUsdResult.length >= 2) {
-            latestPenUsdRate = penUsdResult[0].rate;
-            latestPenUsdChange = penUsdResult[0].rate - penUsdResult[1].rate;
-        } else if (penUsdResult.length === 1) {
-            latestPenUsdRate = penUsdResult[0].rate;
-            latestPenUsdChange = 0;
-        }
     }
+    */
 
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
+  }
+
+  if (penUsdRates.length > 0) {
+      penUsdChartData = penUsdRates.map(item => {
+          const dateObj = new Date(item.created_at);
+          return {
+              date: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
+              value: item.rate,
+              fullDate: dateObj,
+          };
+      }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+
+      if (penUsdRates.length >= 2) {
+          latestPenUsdRate = penUsdRates[0].rate;
+          latestPenUsdChange = penUsdRates[0].rate - penUsdRates[1].rate;
+      } else if (penUsdRates.length === 1) {
+          latestPenUsdRate = penUsdRates[0].rate;
+          latestPenUsdChange = 0;
+      }
   }
 
   if (!hasData && !connectionError) {
