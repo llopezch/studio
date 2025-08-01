@@ -26,30 +26,26 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const getTicks = (data: PenUsdChartData[], numTicks: number = 5): string[] => {
+const getUniqueTicks = (data: PenUsdChartData[], numTicks: number = 5): string[] => {
     if (!data || data.length === 0) return [];
-
-    // Create a Set of unique dates to avoid duplicates
+    
     const uniqueDates = [...new Set(data.map(d => d.date))];
     const dataLength = uniqueDates.length;
+
     if (dataLength <= numTicks) {
         return uniqueDates;
     }
 
     const ticks: string[] = [];
-    const step = Math.floor((dataLength -1) / (numTicks - 1));
+    const step = Math.max(1, Math.floor((dataLength - 1) / (numTicks - 1)));
     
     for (let i = 0; i < dataLength; i += step) {
         ticks.push(uniqueDates[i]);
     }
 
     const lastDate = uniqueDates[dataLength - 1];
-    if (!ticks.includes(lastDate)) {
-      if (ticks.length >= numTicks) {
+    if (ticks[ticks.length - 1] !== lastDate) {
         ticks[ticks.length - 1] = lastDate;
-      } else {
-        ticks.push(lastDate)
-      }
     }
     
     return ticks;
@@ -64,19 +60,7 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
         )
     }
 
-    const visibleTicks = getTicks(data, 5);
-    
-    // This is the correct way to render ticks to avoid key issues
-    const renderTicks = (tickProps: any) => {
-      const { x, y, payload } = tickProps;
-      return (
-        <g transform={`translate(${x},${y})`}>
-          <text x={0} y={0} dy={16} textAnchor="end" fill="#666" transform="rotate(0)">
-            {payload.value}
-          </text>
-        </g>
-      );
-    };
+    const visibleTicks = getUniqueTicks(data, 5);
 
     return (
     <div className="h-[350px] w-full">
@@ -97,7 +81,6 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                     tickLine={false}
                     ticks={visibleTicks}
                     interval="preserveStartEnd"
-                    tickFormatter={(value) => value}
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
