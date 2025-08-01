@@ -1,13 +1,16 @@
 
-import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
 import { createClient } from '@/lib/supabase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
+import { PenUsdChart } from '@/components/pen-usd-chart';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 const mockBanksData = [
     { name: 'BCP', created_at: new Date().toISOString(), buy: 3.751, sell: 3.791, buy_change: 0.002, sell_change: -0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg' },
@@ -40,6 +43,11 @@ interface SupabaseSunatData {
   Venta: number;
 }
 
+interface SupabasePenUsdData {
+  created_at: string;
+  rate: number;
+}
+
 // Interface for data used in the components
 interface BankData {
   name: string;
@@ -59,6 +67,12 @@ export interface SunatData {
 }
 
 interface ChartData {
+  date: string;
+  value: number;
+  fullDate: Date;
+}
+
+export interface PenUsdChartData {
   date: string;
   value: number;
   fullDate: Date;
@@ -85,6 +99,10 @@ export const toDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`;
 }
 
+const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
 export default async function Home() {
   const supabase = createClient();
   let banksData: BankData[] = [];
@@ -93,6 +111,10 @@ export default async function Home() {
   let sunatStartDate: string | null = null;
   let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
+  let penUsdRates: SupabasePenUsdData[] = [];
+  let penUsdChartData: PenUsdChartData[] = [];
+  let latestPenUsdRate: number | null = null;
+  let latestPenUsdChange: number | null = null;
 
   if (supabase) {
     // Fetch Banks Data
@@ -107,23 +129,17 @@ export default async function Home() {
         connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}` };
     } else if (banksResult && banksResult.length > 0) {
       const allBankData = banksResult as SupabaseBankData[];
-
-      // 1. Group data by date
       const dataByDate: { [key: string]: SupabaseBankData[] } = allBankData.reduce((acc, item) => {
         const date = item.Fecha;
-        if (!acc[date]) {
-          acc[date] = [];
-        }
+        if (!acc[date]) { acc[date] = []; }
         acc[date].push(item);
         return acc;
       }, {} as { [key: string]: SupabaseBankData[] });
 
-      // 2. Find the two most recent dates by sorting them
       const sortedDates = Object.keys(dataByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
       const latestDate = sortedDates[0];
       const previousDate = sortedDates[1];
 
-      // 3. Get data for the latest and previous dates
       const latestData = dataByDate[latestDate] || [];
       const previousDataMap: { [key: string]: { Compra: number, Venta: number } } = 
         previousDate ? dataByDate[previousDate].reduce((acc, item) => {
@@ -131,19 +147,14 @@ export default async function Home() {
           return acc;
         }, {} as { [key: string]: { Compra: number, Venta: number } }) : {};
 
-      // 4. Calculate changes and build the final banksData array
       banksData = latestData.map(item => {
         const prev = previousDataMap[item.Banco];
         const buyChange = prev ? item.Compra - prev.Compra : 0;
         const sellChange = prev ? item.Venta - prev.Venta : 0;
         
         return {
-          name: item.Banco,
-          created_at: item.Fecha,
-          buy: item.Compra,
-          sell: item.Venta,
-          buy_change: buyChange, 
-          sell_change: sellChange,
+          name: item.Banco, created_at: item.Fecha, buy: item.Compra, sell: item.Venta,
+          buy_change: buyChange, sell_change: sellChange,
           logo_url: logos[item.Banco.toUpperCase()] || 'https://placehold.co/128x32.png',
         };
       });
@@ -155,12 +166,8 @@ export default async function Home() {
 
     // Fetch SUNAT data only if there is no previous critical error
     if (!connectionError || (connectionError && !connectionError.message.toString().includes('BANCOS'))) {
-      const { data: sunatResult, error: sunatError } = await supabase
-        .from('SUNAT')
-        .select('Fecha, Compra, Venta');
+      const { data: sunatResult, error: sunatError } = await supabase.from('SUNAT').select('Fecha, Compra, Venta');
       
-      console.log('Datos SUNAT desde Supabase:', sunatResult);
-
       if (sunatError && isObjectEmpty(sunatError)) {
           connectionError = { message: rlsHelpMessage('SUNAT') };
       } else if (sunatError) {
@@ -168,7 +175,6 @@ export default async function Home() {
           connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
       } else if (sunatResult && sunatResult.length > 0) {
           const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
-          
           sunatData = supabaseSunatData.reduce((acc, item) => {
               if (item.Fecha) {
                   const dateKey = toDateKey(new Date(item.Fecha + 'T00:00:00Z'));
@@ -181,21 +187,53 @@ export default async function Home() {
               sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Fecha + 'T00:00:00Z'));
           }
 
-          // Generate Chart Data from SUNAT's "Compra"
           chartData = supabaseSunatData.map(item => {
               const dateObj = new Date(item.Fecha + 'T00:00:00Z');
               return {
                   date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-                  value: item.Compra,
-                  fullDate: dateObj,
+                  value: item.Compra, fullDate: dateObj,
               };
           }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
-
-
       } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
           connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
       }
     }
+
+    // Fetch PEN to USD historical data
+    const { data: penUsdResult, error: penUsdError } = await supabase
+        .from('PEN_USD_RATES')
+        .select('created_at, rate')
+        .order('created_at', { ascending: false });
+
+    if (penUsdError && isObjectEmpty(penUsdError)) {
+        connectionError = { message: rlsHelpMessage('PEN_USD_RATES') };
+    } else if (penUsdError) {
+        console.error("Supabase error (PEN_USD_RATES):", penUsdError);
+        // We don't overwrite other connection errors
+        if (!connectionError) {
+            connectionError = { message: `Error al consultar la tabla 'PEN_USD_RATES': ${penUsdError.message}` };
+        }
+    } else if (penUsdResult && penUsdResult.length > 0) {
+        penUsdRates = penUsdResult;
+        
+        penUsdChartData = penUsdResult.map(item => {
+            const dateObj = new Date(item.created_at);
+            return {
+                date: `${dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })} ${dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
+                value: item.rate,
+                fullDate: dateObj,
+            };
+        }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+
+        if (penUsdResult.length >= 2) {
+            latestPenUsdRate = penUsdResult[0].rate;
+            latestPenUsdChange = penUsdResult[0].rate - penUsdResult[1].rate;
+        } else if (penUsdResult.length === 1) {
+            latestPenUsdRate = penUsdResult[0].rate;
+            latestPenUsdChange = 0;
+        }
+    }
+
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
   }
@@ -295,7 +333,7 @@ export default async function Home() {
 
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-               <h2 className="text-2xl font-bold mb-4">Evolución del Tipo de Cambio</h2>
+               <h2 className="text-2xl font-bold mb-4">Evolución del Tipo de Cambio (USD a PEN)</h2>
               <Card>
                 <CardContent className="pt-6">
                   <ExchangeRateChart data={chartData} />
@@ -312,10 +350,63 @@ export default async function Home() {
             </div>
           </section>
 
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CircleDollarSign className="text-primary"/>
+                    <span>Cambio PEN a USD</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {penUsdRates.length > 0 ? (
+                    <>
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold">{latestPenUsdRate?.toFixed(4)}</span>
+                        <span className="text-sm text-muted-foreground ml-2">USD por 1 PEN</span>
+                        {latestPenUsdChange !== null && (
+                            <Badge variant={latestPenUsdChange >= 0 ? "default" : "destructive"} className={`ml-3 bg-opacity-20 text-base ${latestPenUsdChange >= 0 ? 'bg-green-500 text-green-700' : 'bg-red-500 text-red-700'}`}>
+                                {latestPenUsdChange >= 0 ? '+' : ''}{latestPenUsdChange.toFixed(4)}
+                            </Badge>
+                        )}
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Hora</TableHead>
+                            <TableHead className="text-right">Valor (USD)</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {penUsdRates.slice(0, 8).map((rate) => (
+                            <TableRow key={rate.created_at}>
+                              <TableCell>{formatTime(new Date(rate.created_at))}</TableCell>
+                              <TableCell className="text-right font-medium">{rate.rate.toFixed(4)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">No hay datos de PEN a USD para mostrar.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Evolución del Tipo de Cambio (PEN a USD)</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <PenUsdChart data={penUsdChartData} />
+                </CardContent>
+              </Card>
+            </div>
+          </section>
         </main>
       </div>
     </div>
   );
 }
-
-    
