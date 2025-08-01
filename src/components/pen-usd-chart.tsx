@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import * as React from "react"
 import type { PenUsdChartData } from "@/app/page"
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/90 dark:bg-black/90 p-2 rounded-md border border-border shadow-lg">
@@ -45,7 +45,12 @@ const getUniqueTicks = (data: PenUsdChartData[], numTicks: number = 5): string[]
 
     const lastDate = uniqueDates[dataLength - 1];
     if (ticks[ticks.length - 1] !== lastDate) {
-        ticks[ticks.length - 1] = lastDate;
+        // Replace the second to last tick with the last one to avoid clutter
+        if (ticks.length >= numTicks) {
+           ticks[ticks.length -1] = lastDate;
+        } else {
+           ticks.push(lastDate);
+        }
     }
     
     return ticks;
