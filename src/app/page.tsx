@@ -28,13 +28,25 @@ const generateMockPenUsdData = () => {
     const data = [];
     const now = new Date();
     let rate = 0.2750;
-    for (let i = 20 * 2; i >= 0; i--) { // Generate data for ~10 hours, every 30 mins
-        const date = new Date(now.getTime() - i * 30 * 60 * 1000); 
-        rate += (Math.random() - 0.5) * 0.0001; 
+    // Generate data for the last 365 days
+    for (let i = 365; i >= 0; i--) { 
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000); // One entry per day
+        rate += (Math.random() - 0.5) * 0.0005; 
         data.push({
             created_at: date.toISOString(),
             rate: parseFloat(rate.toFixed(5)),
         });
+        // Add more granular data for the last day
+        if (i === 0) {
+            for (let j = 1; j <= 20; j++) {
+                 const recentDate = new Date(now.getTime() - j * 30 * 60 * 1000);
+                 rate += (Math.random() - 0.5) * 0.0001;
+                 data.push({
+                    created_at: recentDate.toISOString(),
+                    rate: parseFloat(rate.toFixed(5)),
+                 })
+            }
+        }
     }
     return data.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 }
@@ -440,5 +452,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
