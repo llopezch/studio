@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, ArrowUp } from 'lucide-react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, ArrowUp, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PenUsdChart } from '@/components/pen-usd-chart';
 
 const mockBanksData = [
@@ -130,10 +129,12 @@ const generateMockRecentConversions = () => {
   let value = 0.2786;
   for (let i = 0; i < 7; i++) {
     const time = new Date(now.getTime() - i * 30 * 60 * 1000);
-    value += (Math.random() - 0.5) * 0.0005;
+    const change = (Math.random() - 0.5) * 0.0001;
+    value += change;
     data.push({
-      time: time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      value: value.toFixed(4)
+      time: time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+      value: value.toFixed(4),
+      change: change.toFixed(4)
     });
   }
   return data;
@@ -357,27 +358,29 @@ export default async function Home() {
 
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
              <Card className="lg:col-span-1">
-                <CardHeader>
-                    <CardTitle>Conversión PEN a USD</CardTitle>
-                    <CardDescription>Últimas 3.5 horas</CardDescription>
+                <CardHeader className="flex-row items-center gap-2 space-y-0">
+                    <DollarSign className="h-6 w-6 text-primary"/>
+                    <CardTitle>Cambio PEN a USD</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[100px]">Hora</TableHead>
-                                <TableHead className="text-right">Valor (1 PEN)</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {mockRecentConversions.map((conv) => (
-                                <TableRow key={conv.time}>
-                                    <TableCell className="font-medium">{conv.time}</TableCell>
-                                    <TableCell className="text-right">{conv.value} USD</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                <CardContent className="p-0">
+                    <div className="flow-root">
+                        <ul role="list" className="divide-y divide-border">
+                            {mockRecentConversions.map((conv) => {
+                                const isPositive = parseFloat(conv.change) >= 0;
+                                return (
+                                    <li key={conv.time} className="px-6 py-4 flex items-center justify-between">
+                                        <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
+                                        <div className="ml-4 text-right">
+                                            <p className="font-semibold text-foreground">{conv.value}</p>
+                                            <div className={`text-xs px-2 py-0.5 rounded-full inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-destructive'}`}>
+                                                {isPositive ? '+' : ''}{conv.change}
+                                            </div>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
                 </CardContent>
              </Card>
             <div className="lg:col-span-2">
@@ -410,4 +413,3 @@ export default async function Home() {
     </div>
   );
 }
-
