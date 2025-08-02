@@ -93,22 +93,18 @@ export const toDateKey = (date: Date): string => {
 const generateMockPenToUsdData = (): PenUsdChartData[] => {
     const data: PenUsdChartData[] = [];
     let currentDate = new Date();
-    // Start from a year ago
     currentDate.setFullYear(currentDate.getFullYear() - 1);
     const endDate = new Date();
-
-    let value = 0.2750; // Starting value
+    let value = 0.2750;
 
     while (currentDate <= endDate) {
-        // Add more data points for variability
         for (let i = 0; i < Math.floor(Math.random() * 4) + 1; i++) {
           const change = (Math.random() - 0.5) * 0.001;
           value += change;
-          // Clamp the value to a reasonable range
           value = Math.max(0.26, Math.min(0.29, value));
           
           const pointDate = new Date(currentDate);
-          pointDate.setHours(i * 6); // Spread data points throughout the day
+          pointDate.setHours(i * 6);
           
           if (pointDate > endDate) break;
 
@@ -134,7 +130,7 @@ const generateMockRecentConversions = () => {
     data.push({
       time: time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
       value: value.toFixed(4),
-      change: change.toFixed(4)
+      change: change.toFixed(5)
     });
   }
   return data;
@@ -372,7 +368,7 @@ export default async function Home() {
                                         <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
                                         <div className="ml-4 text-right">
                                             <p className="font-semibold text-foreground">{conv.value}</p>
-                                            <div className={`text-xs px-2 py-0.5 rounded-full inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-destructive'}`}>
+                                            <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-gray-800 text-green-400' : 'bg-gray-700 text-red-400'}`}>
                                                 {isPositive ? '+' : ''}{conv.change}
                                             </div>
                                         </div>
@@ -413,3 +409,4 @@ export default async function Home() {
     </div>
   );
 }
+
