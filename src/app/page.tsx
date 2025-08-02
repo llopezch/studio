@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
@@ -9,6 +9,8 @@ import { createClient } from '@/lib/supabase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PenUsdChart } from '@/components/pen-usd-chart';
 
 const mockBanksData = [
     { name: 'BCP', created_at: new Date().toISOString(), buy: 3.751, sell: 3.791, buy_change: 0.002, sell_change: -0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg' },
@@ -63,6 +65,12 @@ export interface SunatChartData {
     fullDate: Date;
 }
 
+export interface PenUsdChartData {
+  date: string;
+  value: number;
+  fullDate: Date;
+}
+
 const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 
 const rlsHelpMessage = (tableName: string) => (
@@ -81,6 +89,54 @@ export const toDateKey = (date: Date): string => {
   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
   const day = date.getUTCDate().toString().padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+const generateMockPenToUsdData = (): PenUsdChartData[] => {
+    const data: PenUsdChartData[] = [];
+    let currentDate = new Date();
+    // Start from a year ago
+    currentDate.setFullYear(currentDate.getFullYear() - 1);
+    const endDate = new Date();
+
+    let value = 0.2750; // Starting value
+
+    while (currentDate <= endDate) {
+        // Add more data points for variability
+        for (let i = 0; i < Math.floor(Math.random() * 4) + 1; i++) {
+          const change = (Math.random() - 0.5) * 0.001;
+          value += change;
+          // Clamp the value to a reasonable range
+          value = Math.max(0.26, Math.min(0.29, value));
+          
+          const pointDate = new Date(currentDate);
+          pointDate.setHours(i * 6); // Spread data points throughout the day
+          
+          if (pointDate > endDate) break;
+
+          data.push({
+              date: `${pointDate.getUTCDate()} ${pointDate.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+              value: value,
+              fullDate: pointDate
+          });
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return data;
+};
+
+const generateMockRecentConversions = () => {
+  const data = [];
+  const now = new Date();
+  let value = 0.2786;
+  for (let i = 0; i < 7; i++) {
+    const time = new Date(now.getTime() - i * 30 * 60 * 1000);
+    value += (Math.random() - 0.5) * 0.0005;
+    data.push({
+      time: time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      value: value.toFixed(4)
+    });
+  }
+  return data;
 }
 
 export default async function Home() {
@@ -163,7 +219,7 @@ export default async function Home() {
               const dateObj = new Date(item.Fecha + 'T00:00:00Z');
               return {
                   date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-                  value: item.Compra, // Using buy rate for the chart
+                  value: item.Compra,
                   fullDate: dateObj,
               };
           });
@@ -190,6 +246,13 @@ export default async function Home() {
   const difference = banksData.length > 0 ? (bestSell - bestBuy).toFixed(3) : '0.000';
   const bestBuyBank = banksData.find(b => b.buy === bestBuy)?.name;
   const bestSellBank = banksData.find(b => b.sell === bestSell)?.name;
+
+  const mockPenToUsd = generateMockPenToUsdData();
+  const mockRecentConversions = generateMockRecentConversions();
+  const latestPenToUsd = mockPenToUsd[mockPenToUsd.length - 1]?.value || 0;
+  const previousPenToUsd = mockPenToUsd[mockPenToUsd.length - 2]?.value || 0;
+  const penToUsdChange = latestPenToUsd - previousPenToUsd;
+  const penToUsdChangePercent = previousPenToUsd !== 0 ? (penToUsdChange / previousPenToUsd) * 100 : 0;
 
   return (
     <div className="bg-background text-foreground min-h-screen w-full">
@@ -291,8 +354,60 @@ export default async function Home() {
               </Card>
             </div>
           </section>
+
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+             <Card className="lg:col-span-1">
+                <CardHeader>
+                    <CardTitle>Conversión PEN a USD</CardTitle>
+                    <CardDescription>Últimas 3.5 horas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[100px]">Hora</TableHead>
+                                <TableHead className="text-right">Valor (1 PEN)</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {mockRecentConversions.map((conv) => (
+                                <TableRow key={conv.time}>
+                                    <TableCell className="font-medium">{conv.time}</TableCell>
+                                    <TableCell className="text-right">{conv.value} USD</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+             </Card>
+            <div className="lg:col-span-2">
+              <Card>
+                  <CardHeader>
+                    <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pl-2 pr-6 pb-6">
+                     <div className="p-4">
+                        <div className="text-3xl font-bold">
+                           {latestPenToUsd.toFixed(4)}
+                           <span className="text-sm font-normal text-muted-foreground ml-2">USD</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                           <span className={`flex items-center font-semibold ${penToUsdChange >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                               <ArrowUp className={`h-4 w-4 mr-1 ${penToUsdChange < 0 && 'rotate-180'}`} />
+                               {penToUsdChange.toFixed(4)} ({penToUsdChangePercent.toFixed(2)}%)
+                           </span>
+                           <span className="text-muted-foreground ml-2">en el último día</span>
+                        </div>
+                     </div>
+                     <PenUsdChart data={mockPenToUsd} />
+                  </CardContent>
+              </Card>
+            </div>
+          </section>
+
         </main>
       </div>
     </div>
   );
 }
+
