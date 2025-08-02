@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp, CircleDollarSign } from 'lucide-react';
+import { ArrowDownUp, BarChart, ChevronRight, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BankRateCard } from '@/components/bank-rate-card';
@@ -8,10 +8,6 @@ import { ExchangeRateCalendar } from '@/components/exchange-rate-calendar';
 import { createClient } from '@/lib/supabase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
-import { PenUsdChart } from '@/components/pen-usd-chart';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 
 const mockBanksData = [
@@ -21,35 +17,6 @@ const mockBanksData = [
     { name: 'Scotiabank', created_at: new Date().toISOString(), buy: 3.72, sell: 3.82, buy_change: 0.005, sell_change: -0.002, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg' },
     { name: 'Banco de la Nación', created_at: new Date().toISOString(), buy: 3.73, sell: 3.78, buy_change: 0.001, sell_change: 0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg' },
 ];
-
-const generateMockPenUsdData = () => {
-    const data = [];
-    const now = new Date();
-    let rate = 0.2750;
-    // Generate data for the last 365 days
-    for (let i = 365; i >= 0; i--) {
-        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000); // One entry per day
-        rate += (Math.random() - 0.5) * 0.0005;
-        data.push({
-            created_at: date.toISOString(),
-            rate: parseFloat(rate.toFixed(5)),
-        });
-        // Add more granular data for the last day
-        if (i === 0) {
-            for (let j = 1; j <= 20; j++) {
-                 const recentDate = new Date(now.getTime() - j * 30 * 60 * 1000);
-                 rate += (Math.random() - 0.5) * 0.0001;
-                 data.push({
-                    created_at: recentDate.toISOString(),
-                    rate: parseFloat(rate.toFixed(5)),
-                 })
-            }
-        }
-    }
-    return data.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-}
-
-const mockPenUsdRates = generateMockPenUsdData();
 
 const logos: Record<string, string> = {
     'BCP': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg',
@@ -73,11 +40,6 @@ interface SupabaseSunatData {
   Venta: number;
 }
 
-interface SupabasePenUsdData {
-  created_at: string;
-  rate: number;
-}
-
 interface BankData {
   name: string;
   created_at: string;
@@ -93,12 +55,6 @@ export interface SunatData {
     buy: number;
     sell: number;
   }
-}
-
-export interface PenUsdChartData {
-  date: string;
-  value: number;
-  fullDate: Date;
 }
 
 export interface SunatChartData {
@@ -127,15 +83,6 @@ export const toDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`;
 }
 
-const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
-}
-
-interface PenUsdRateWithChange extends SupabasePenUsdData {
-    change: number;
-}
-
-
 export default async function Home() {
   const supabase = createClient();
   let banksData: BankData[] = [];
@@ -144,7 +91,6 @@ export default async function Home() {
   let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
   
-  let penUsdRates: PenUsdRateWithChange[] = [];
   let sunatChartData: SunatChartData[] = [];
 
 
@@ -229,22 +175,9 @@ export default async function Home() {
           connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
       }
     }
-    
-    const rawPenUsdRates = mockPenUsdRates;
-    penUsdRates = rawPenUsdRates.map((rate, index) => {
-        const previousRate = rawPenUsdRates[index + 1];
-        const change = previousRate ? rate.rate - previousRate.rate : 0;
-        return { ...rate, change };
-    });
 
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
-     const rawPenUsdRates = mockPenUsdRates;
-     penUsdRates = rawPenUsdRates.map((rate, index) => {
-        const previousRate = rawPenUsdRates[index + 1];
-        const change = previousRate ? rate.rate - previousRate.rate : 0;
-        return { ...rate, change };
-     });
   }
 
   if (!hasData && !connectionError) {
@@ -257,21 +190,6 @@ export default async function Home() {
   const difference = banksData.length > 0 ? (bestSell - bestBuy).toFixed(3) : '0.000';
   const bestBuyBank = banksData.find(b => b.buy === bestBuy)?.name;
   const bestSellBank = banksData.find(b => b.sell === bestSell)?.name;
-  
-  const penUsdChartData: PenUsdChartData[] = penUsdRates.map(item => {
-    const dateObj = new Date(item.created_at);
-    const isToday = toDateKey(dateObj) === toDateKey(new Date());
-    const dateLabel = isToday 
-      ? dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false }) 
-      : `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`;
-    
-    return {
-      date: dateLabel,
-      value: item.rate,
-      fullDate: dateObj,
-    };
-  }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
-
 
   return (
     <div className="bg-background text-foreground min-h-screen w-full">
@@ -352,57 +270,6 @@ export default async function Home() {
               )) : (
                  <p className="text-muted-foreground col-span-full">No hay datos de bancos para mostrar.</p>
               )}
-            </div>
-          </section>
-
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CircleDollarSign className="text-primary"/>
-                    <span>Cambio PEN a USD</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {penUsdRates.length > 0 ? (
-                    <div className="flex flex-col">
-                      {penUsdRates.slice(0, 8).map((rate, index) => (
-                        <React.Fragment key={rate.created_at}>
-                          <div className="flex items-center justify-between p-4 hover:bg-muted/50">
-                            <div>
-                              <div className="font-bold text-base">{formatTime(new Date(rate.created_at))}</div>
-                              <div className="text-sm text-muted-foreground">PEN a USD</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-bold text-base">{rate.rate.toFixed(4)}</div>
-                               <Badge variant='outline' className={cn(
-                                "text-xs font-semibold px-2 py-1 mt-1 rounded-md border-transparent",
-                                rate.change >= 0 ? 'bg-gray-900 text-white' : 'bg-gray-500 text-white'
-                               )}>
-                                {rate.change >= 0 ? '+' : ''}{rate.change.toFixed(4)}
-                              </Badge>
-                            </div>
-                          </div>
-                          {index < 7 && penUsdRates.length > 1 && <Separator />}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8 px-4">No hay datos de PEN a USD para mostrar.</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-            <div className="lg:col-span-2">
-               <Card>
-                <CardHeader>
-                    <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <PenUsdChart data={penUsdChartData} />
-                </CardContent>
-               </Card>
             </div>
           </section>
           
