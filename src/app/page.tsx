@@ -124,7 +124,7 @@ const generateMockRecentConversions = () => {
   const now = new Date();
   let value = 0.2786;
   for (let i = 0; i < 7; i++) {
-    const time = new Date(now.getTime() - i * 30 * 60 * 1000);
+    const time = new Date(now.getTime() - i * 30 * 60 * 1000); // 30 mins intervals
     const change = (Math.random() - 0.5) * 0.0001;
     value += change;
     data.push({
@@ -364,11 +364,11 @@ export default async function Home() {
                             {mockRecentConversions.map((conv) => {
                                 const isPositive = parseFloat(conv.change) >= 0;
                                 return (
-                                    <li key={conv.time} className="px-6 py-4 flex items-center justify-between">
+                                    <li key={conv.time} className="px-6 py-3 flex items-center justify-between">
                                         <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
                                         <div className="ml-4 text-right">
                                             <p className="font-semibold text-foreground">{conv.value}</p>
-                                            <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-gray-800 text-green-400' : 'bg-gray-700 text-red-400'}`}>
+                                            <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-gray-800 text-green-400' : 'bg-gray-800 text-red-400'}`}>
                                                 {isPositive ? '+' : ''}{conv.change}
                                             </div>
                                         </div>
@@ -386,17 +386,19 @@ export default async function Home() {
                   </CardHeader>
                   <CardContent className="pl-2 pr-6 pb-6">
                      <div className="p-4">
-                        <div className="text-3xl font-bold">
-                           {latestPenToUsd.toFixed(4)}
-                           <span className="text-sm font-normal text-muted-foreground ml-2">USD</span>
+                        <div className="flex items-baseline gap-4">
+                            <div className="text-3xl font-bold">
+                               {latestPenToUsd.toFixed(4)}
+                               <span className="text-sm font-normal text-muted-foreground ml-2">USD</span>
+                            </div>
+                            <div className="flex items-center text-sm">
+                               <span className={`flex items-center font-semibold ${penToUsdChange >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                                   <ArrowUp className={`h-4 w-4 mr-1 ${penToUsdChange < 0 && 'rotate-180'}`} />
+                                   {penToUsdChange.toFixed(4)} ({penToUsdChangePercent.toFixed(2)}%)
+                               </span>
+                            </div>
                         </div>
-                        <div className="flex items-center text-sm">
-                           <span className={`flex items-center font-semibold ${penToUsdChange >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-                               <ArrowUp className={`h-4 w-4 mr-1 ${penToUsdChange < 0 && 'rotate-180'}`} />
-                               {penToUsdChange.toFixed(4)} ({penToUsdChangePercent.toFixed(2)}%)
-                           </span>
-                           <span className="text-muted-foreground ml-2">en el último día</span>
-                        </div>
+                        <div className="text-muted-foreground text-sm mt-1">en el último día</div>
                      </div>
                      <PenUsdChart data={mockPenToUsd} />
                   </CardContent>
@@ -408,5 +410,5 @@ export default async function Home() {
       </div>
     </div>
   );
-}
 
+    
