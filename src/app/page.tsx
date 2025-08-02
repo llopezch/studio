@@ -163,7 +163,7 @@ export default async function Home() {
               const dateObj = new Date(item.Fecha + 'T00:00:00Z');
               return {
                   date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-                  value: item.Venta, // Using sell rate for the chart
+                  value: item.Compra, // Using buy rate for the chart
                   fullDate: dateObj,
               };
           });
