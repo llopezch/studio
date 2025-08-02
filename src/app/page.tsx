@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { PenUsdChart } from '@/components/pen-usd-chart';
+import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 
 const mockBanksData = [
     { name: 'BCP', created_at: new Date().toISOString(), buy: 3.751, sell: 3.791, buy_change: 0.002, sell_change: -0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg' },
@@ -100,6 +101,12 @@ export interface PenUsdChartData {
   fullDate: Date;
 }
 
+export interface SunatChartData {
+    date: string;
+    value: number;
+    fullDate: Date;
+}
+
 const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 
 const rlsHelpMessage = (tableName: string) => (
@@ -138,6 +145,7 @@ export default async function Home() {
   let hasData = false;
   
   let penUsdRates: PenUsdRateWithChange[] = [];
+  let sunatChartData: SunatChartData[] = [];
 
 
   if (supabase) {
@@ -204,6 +212,15 @@ export default async function Home() {
               }
               return acc;
           }, {} as SunatData);
+
+          sunatChartData = supabaseSunatData.map(item => {
+              const dateObj = new Date(item.Fecha + 'T00:00:00Z');
+              return {
+                  date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+                  value: item.Venta, // Using sell rate for the chart
+                  fullDate: dateObj,
+              };
+          });
 
           if (supabaseSunatData[0]?.Fecha) {
               sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Fecha + 'T00:00:00Z'));
@@ -390,12 +407,11 @@ export default async function Home() {
           </section>
           
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            
             <div className="lg:col-span-2">
               <h2 className="text-2xl font-bold mb-4">Evolución del Tipo de Cambio (USD a PEN)</h2>
               <Card>
                 <CardContent className="pt-6">
-                  {/* The chart has been removed from here, as SUNAT data is not available */}
+                  <ExchangeRateChart data={sunatChartData} />
                 </CardContent>
               </Card>
             </div>
@@ -413,5 +429,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
