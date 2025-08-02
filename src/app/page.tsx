@@ -11,6 +11,8 @@ import { Terminal } from 'lucide-react';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { PenUsdChart } from '@/components/pen-usd-chart';
 
+export const dynamic = 'force-dynamic';
+
 const mockBanksData = [
     { name: 'BCP', created_at: new Date().toISOString(), buy: 3.751, sell: 3.791, buy_change: 0.002, sell_change: -0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795802665-bcp-2.svg' },
     { name: 'Interbank', created_at: new Date().toISOString(), buy: 3.74, sell: 3.802, buy_change: -0.001, sell_change: 0.003, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795730806-Group%2048095814.svg' },
@@ -410,5 +412,6 @@ export default async function Home() {
       </div>
     </div>
   );
+}
 
     
