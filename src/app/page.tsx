@@ -76,6 +76,7 @@ export interface RecentConversion {
   time: string;
   value: number;
   change: number;
+  created_at: string;
 }
 
 const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
@@ -98,48 +99,6 @@ export const toDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`;
 }
 
-const generateMockPenToUsdData = (): PenUsdChartData[] => {
-    const data: PenUsdChartData[] = [];
-    let currentDate = new Date();
-    currentDate.setFullYear(currentDate.getFullYear() - 1);
-    const endDate = new Date();
-    let value = 0.2750;
-
-    let pointDate = new Date(currentDate);
-
-    while (pointDate <= endDate) {
-        const change = (Math.random() - 0.5) * 0.001;
-        value += change;
-        value = Math.max(0.26, Math.min(0.29, value));
-        
-        data.push({
-            date: `${pointDate.getUTCDate()} ${pointDate.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-            value: value,
-            fullDate: new Date(pointDate) // Clone date
-        });
-
-        // Increment by a random number of hours between 4 and 12
-        pointDate.setHours(pointDate.getHours() + Math.floor(Math.random() * 8) + 4);
-    }
-    return data;
-};
-
-const generateMockRecentConversions = (): RecentConversion[] => {
-  const data = [];
-  const now = new Date();
-  let value = 0.2786;
-  for (let i = 0; i < 7; i++) {
-    const time = new Date(now.getTime() - i * 30 * 60 * 1000); // 30 mins intervals
-    const change = (Math.random() - 0.5) * 0.0001;
-    value += change;
-    data.push({
-      time: time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
-      value: value,
-      change: change
-    });
-  }
-  return data;
-}
 
 export default async function Home() {
   const supabase = createClient();
@@ -149,6 +108,7 @@ export default async function Home() {
   let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
   let recentConversions: RecentConversion[] = [];
+  let penToUsdData: PenUsdChartData[] = [];
   
   let sunatChartData: SunatChartData[] = [];
 
@@ -238,16 +198,25 @@ export default async function Home() {
     }
     
     // Fetch Recent PEN_USD_RECENT Data
-    const { data: recentResult, error: recentError } = await supabase.from('PEN_USD_RECENT').select('time, value, change').order('created_at', { ascending: false });
+    const { data: recentResult, error: recentError } = await supabase.from('PEN_USD_RECENT').select('time, value, change, created_at').order('created_at', { ascending: false });
 
-    if (recentError) {
-        console.warn("Supabase warning (PEN_USD_RECENT):", recentError.message);
-        // No mostramos error de conexión por esto, simplemente usamos mock data.
-        recentConversions = generateMockRecentConversions();
+    if (recentError && isObjectEmpty(recentError)) {
+      connectionError = { message: rlsHelpMessage('PEN_USD_RECENT') };
+    } else if (recentError) {
+        console.error("Supabase error (PEN_USD_RECENT):", recentError);
+        connectionError = { message: `Error al consultar la tabla 'PEN_USD_RECENT': ${recentError.message}` };
     } else if (recentResult && recentResult.length > 0) {
         recentConversions = recentResult;
-    } else {
-        recentConversions = generateMockRecentConversions();
+        penToUsdData = recentResult.map(item => {
+          const dateObj = new Date(item.created_at);
+          return {
+            date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+            value: item.value,
+            fullDate: dateObj
+          };
+        }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
+    } else if (recentResult && recentResult.length === 0) {
+      // Tabla vacía, no mostrar error, solo no mostrar datos.
     }
 
 
@@ -258,9 +227,6 @@ export default async function Home() {
   if (!hasData) {
       banksData = mockBanksData;
   }
-   if (recentConversions.length === 0){
-     recentConversions = generateMockRecentConversions();
-   }
 
   const bestBuy = banksData.length > 0 ? Math.max(...banksData.map(b => b.buy)) : 0;
   const bestSell = banksData.length > 0 ? Math.min(...banksData.map(b => b.sell)) : 0;
@@ -269,11 +235,12 @@ export default async function Home() {
   const bestBuyBank = banksData.find(b => b.buy === bestBuy)?.name;
   const bestSellBank = banksData.find(b => b.sell === bestSell)?.name;
 
-  const mockPenToUsd = generateMockPenToUsdData();
-  const latestPenToUsd = mockPenToUsd[mockPenToUsd.length - 1]?.value || 0;
-  const previousPenToUsd = mockPenToUsd[mockPenToUsd.length - 2]?.value || 0;
+  const latestPenToUsd = penToUsdData[penToUsdData.length - 1]?.value || 0;
+  const previousPenToUsd = penToUsdData[penToUsdData.length - 2]?.value || 0;
   const penToUsdChange = latestPenToUsd - previousPenToUsd;
   const penToUsdChangePercent = previousPenToUsd !== 0 ? (penToUsdChange / previousPenToUsd) * 100 : 0;
+  
+  const recentConversionsList = recentConversions.slice(0, 7);
 
   return (
     <div className="bg-background text-foreground min-h-screen w-full">
@@ -383,9 +350,10 @@ export default async function Home() {
                     <CardTitle>Cambio PEN a USD Reciente</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
+                  {recentConversionsList.length > 0 ? (
                     <div className="flow-root">
                         <ul role="list" className="divide-y divide-border">
-                            {recentConversions.map((conv) => {
+                            {recentConversionsList.map((conv) => {
                                 const isPositive = conv.change >= 0;
                                 return (
                                     <li key={conv.time} className="px-6 py-3 flex items-center justify-between">
@@ -401,6 +369,9 @@ export default async function Home() {
                             })}
                         </ul>
                     </div>
+                   ) : (
+                    <p className="text-muted-foreground text-center p-6">No hay datos de conversiones recientes.</p>
+                   )}
                 </CardContent>
              </Card>
             <div className="lg:col-span-2">
@@ -409,6 +380,8 @@ export default async function Home() {
                     <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
                   </CardHeader>
                   <CardContent className="pl-2 pr-6 pb-6">
+                   {penToUsdData.length > 0 ? (
+                    <>
                      <div className="p-4">
                         <div className="flex items-baseline gap-4">
                             <div className="text-3xl font-bold">
@@ -424,7 +397,11 @@ export default async function Home() {
                         </div>
                         <div className="text-muted-foreground text-sm mt-1">en el último día</div>
                      </div>
-                     <PenUsdChart data={mockPenToUsd} />
+                     <PenUsdChart data={penToUsdData} />
+                    </>
+                    ) : (
+                      <p className="text-muted-foreground text-center p-6">No hay suficientes datos para mostrar el gráfico.</p>
+                    )}
                   </CardContent>
               </Card>
             </div>
