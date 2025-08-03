@@ -29,19 +29,27 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const getTicks = (data: PenUsdChartData[], timeRange: 'week' | 'month' | '6months' | 'year'): string[] => {
     if (!data || data.length < 2) return [];
 
-    let numTicks = 5; // Default value
-    if (timeRange === 'week') {
-      // For weekly view, show all days if not too many
-      return data.map(d => d.date);
-    } else if (timeRange === 'month') {
-      numTicks = 5; // Approx 1 tick per week
-    } else if (timeRange === '6months') {
-      numTicks = 6; // 1 tick per month
-    } else if (timeRange === 'year') {
-      numTicks = 7; // Approx 1 tick every 2 months
+    let numTicks: number;
+
+    switch (timeRange) {
+        case 'week':
+            // For weekly view, show all days if not too many
+            return data.map(d => d.date);
+        case 'month':
+            numTicks = 5; // Approx 1 tick per week
+            break;
+        case '6months':
+            numTicks = 6; // 1 tick per month
+            break;
+        case 'year':
+            numTicks = 7; // Approx 1 tick every 2 months
+            break;
+        default:
+            numTicks = 5;
     }
 
     const ticks: string[] = [];
+    // Ensure we don't divide by zero if data length is less than numTicks
     const step = Math.max(1, Math.floor((data.length - 1) / (numTicks - 1)));
 
     for (let i = 0; i < data.length; i += step) {
@@ -76,14 +84,16 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
 
     const visibleTicks = getTicks(data, timeRange);
 
+    const chartColor = "hsl(var(--chart-2))";
+
     return (
     <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <defs>
                     <linearGradient id="colorPenUsd" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={chartColor} stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
                     </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -105,10 +115,10 @@ const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRang
                     tickFormatter={(value) => typeof value === 'number' ? value.toFixed(4) : value}
                 />
                 <Tooltip
-                    cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
+                    cursor={{ stroke: chartColor, strokeWidth: 1, strokeDasharray: '3 3' }}
                     content={<CustomTooltip />}
                 />
-                <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPenUsd)" activeDot={{ r: 6 }}/>
+                <Area type="monotone" dataKey="value" stroke={chartColor} strokeWidth={2} fillOpacity={1} fill="url(#colorPenUsd)" activeDot={{ r: 6 }}/>
             </AreaChart>
         </ResponsiveContainer>
     </div>
