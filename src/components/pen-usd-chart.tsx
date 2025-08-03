@@ -46,7 +46,7 @@ const getTicks = (data: PenUsdChartData[], numTicks: number = 5): string[] => {
     return ticks;
 };
 
-const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRange: string }) => {
+const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
     if (!data || data.length === 0) {
         return (
             <div className="h-[350px] w-full flex items-center justify-center text-muted-foreground">
@@ -101,7 +101,10 @@ export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
   const filterData = (days: number) => {
     const pastDate = new Date();
     pastDate.setDate(now.getDate() - days);
-    return data.filter(item => item.fullDate >= pastDate);
+    return data.filter(item => {
+        const itemDate = new Date(item.fullDate);
+        return itemDate >= pastDate;
+    });
   }
 
   const weeklyData = filterData(7);
@@ -110,7 +113,7 @@ export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
   const yearlyData = filterData(365);
 
   return (
-    <Tabs defaultValue="week">
+    <Tabs defaultValue="year">
       <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b mb-4">
         <TabsTrigger value="week" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Semana</TabsTrigger>
         <TabsTrigger value="month" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Mes</TabsTrigger>
@@ -118,16 +121,16 @@ export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
         <TabsTrigger value="year" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">1 Año</TabsTrigger>
       </TabsList>
       <TabsContent value="week">
-        <ChartComponent data={weeklyData} timeRange="week" />
+        <ChartComponent data={weeklyData} />
       </TabsContent>
       <TabsContent value="month">
-        <ChartComponent data={monthlyData} timeRange="month" />
+        <ChartComponent data={monthlyData} />
       </TabsContent>
       <TabsContent value="6months">
-        <ChartComponent data={sixMonthsData} timeRange="6months" />
+        <ChartComponent data={sixMonthsData} />
       </TabsContent>
       <TabsContent value="year">
-        <ChartComponent data={yearlyData} timeRange="year" />
+        <ChartComponent data={data} />
       </TabsContent>
     </Tabs>
   )

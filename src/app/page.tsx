@@ -66,6 +66,11 @@ export interface SunatChartData {
     fullDate: Date;
 }
 
+export interface PenUsdData {
+  fechahora: string;
+  cierre: number;
+}
+
 export interface PenUsdChartData {
   date: string;
   value: number;
@@ -76,7 +81,6 @@ export interface RecentConversion {
   time: string;
   value: number;
   change: number;
-  created_at: string;
 }
 
 const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
@@ -197,28 +201,51 @@ export default async function Home() {
       }
     }
     
-    // Fetch Recent PEN_USD_RECENT Data
-    const { data: recentResult, error: recentError } = await supabase.from('PEN_USD_RECENT').select('time, value, change, created_at').order('created_at', { ascending: false });
-
+    // Fetch Recent Conversions from 'update_30min'
+    const { data: recentResult, error: recentError } = await supabase
+      .from('update_30min')
+      .select('fechahora, cierre')
+      .order('fechahora', { ascending: false })
+      .limit(10);
+      
     if (recentError && isObjectEmpty(recentError)) {
-      connectionError = { message: rlsHelpMessage('PEN_USD_RECENT') };
+        connectionError = { message: rlsHelpMessage('update_30min') };
     } else if (recentError) {
-        console.error("Supabase error (PEN_USD_RECENT):", recentError);
-        connectionError = { message: `Error al consultar la tabla 'PEN_USD_RECENT': ${recentError.message}` };
+        console.error("Supabase error (update_30min):", recentError);
+        connectionError = { message: `Error al consultar la tabla 'update_30min': ${recentError.message}` };
     } else if (recentResult && recentResult.length > 0) {
-        recentConversions = recentResult;
-        penToUsdData = recentResult.map(item => {
-          const dateObj = new Date(item.created_at);
-          return {
-            date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-            value: item.value,
-            fullDate: dateObj
-          };
-        }).sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
-    } else if (recentResult && recentResult.length === 0) {
-      // Tabla vacía, no mostrar error, solo no mostrar datos.
+        recentConversions = recentResult.map((item, index, arr) => {
+            const currentValue = item.cierre;
+            const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
+            const change = currentValue - previousValue;
+            const dateObj = new Date(item.fechahora);
+            const time = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
+            
+            return { time, value: currentValue, change };
+        });
     }
 
+    // Fetch Annual Data from 'updateanual'
+    const { data: annualResult, error: annualError } = await supabase
+        .from('updateanual')
+        .select('fechahora, cierre')
+        .order('fechahora', { ascending: true });
+
+    if (annualError && isObjectEmpty(annualError)) {
+        connectionError = { message: rlsHelpMessage('updateanual') };
+    } else if (annualError) {
+        console.error("Supabase error (updateanual):", annualError);
+        connectionError = { message: `Error al consultar la tabla 'updateanual': ${annualError.message}` };
+    } else if (annualResult && annualResult.length > 0) {
+        penToUsdData = annualResult.map(item => {
+            const dateObj = new Date(item.fechahora);
+            return {
+                date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+                value: item.cierre,
+                fullDate: dateObj
+            };
+        });
+    }
 
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
