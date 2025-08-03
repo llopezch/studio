@@ -1,5 +1,5 @@
 
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -15,10 +15,18 @@ interface N8NData {
 }
 
 export async function POST(request: Request) {
-  const supabase = createClient();
-  if (!supabase) {
-    return NextResponse.json({ error: 'Supabase client could not be initialized.' }, { status: 500 });
+  // **Importante:** Usamos las variables de entorno del servidor para crear un cliente con permisos de administrador.
+  // Esto es seguro porque este código solo se ejecuta en el servidor y las claves no son visibles para el usuario.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Supabase server credentials are not configured.');
+    return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
+
+  // Se crea un cliente con la "llave maestra" (service_role) que puede saltarse las políticas RLS.
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     const incomingData: N8NData[] = await request.json();
