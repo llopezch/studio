@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // Este es el tipo de datos que esperamos recibir de n8n en el cuerpo de la solicitud (POST).
 // Se basa en la estructura de salida que se ve en la captura de pantalla de n8n.
 interface N8NData {
-  datetime: string;
+  fechahora: string; // Corregido de 'datetime' a 'fechahora'
   open: number;
   high: number;
   low: number;
@@ -41,8 +41,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'Datos recibidos, pero el array está vacío. No se realizaron acciones.' }, { status: 200 });
     }
     
-    // Ordenamos los datos por fecha (datetime) de más reciente a más antiguo
-    const sortedData = incomingData.sort((a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime());
+    // Ordenamos los datos por fecha (fechahora) de más reciente a más antiguo
+    const sortedData = incomingData.sort((a, b) => new Date(b.fechahora).getTime() - new Date(a.fechahora).getTime());
     
     // Tomamos solo los últimos 7 registros
     const latestSeven = sortedData.slice(0, 7);
@@ -56,9 +56,9 @@ export async function POST(request: Request) {
         
         return {
             // Guardamos la fecha completa para ordenarla si es necesario
-            created_at: item.datetime,
+            created_at: item.fechahora,
             // Formateamos la hora para mostrarla en el panel
-            time: new Date(item.datetime).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' }),
+            time: new Date(item.fechahora).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' }),
             value: item.open,
             change: change
         };
