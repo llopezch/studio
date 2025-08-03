@@ -79,6 +79,7 @@ export interface PenUsdChartData {
 
 export interface RecentConversion {
   time: string;
+  date: string;
   value: number;
   change: number;
 }
@@ -220,8 +221,9 @@ export default async function Home() {
             const change = currentValue - previousValue;
             const dateObj = new Date(item.fechahora);
             const time = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const date = dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }).replace('.','');
             
-            return { time, value: currentValue, change };
+            return { time, date, value: currentValue, change };
         });
     }
 
@@ -371,20 +373,23 @@ export default async function Home() {
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-             <Card className="lg:col-span-1">
+             <Card className="lg:col-span-1 flex flex-col">
                 <CardHeader className="flex-row items-center gap-2 space-y-0">
                     <DollarSign className="h-6 w-6 text-primary"/>
-                    <CardTitle>Cambio PEN a USD Reciente</CardTitle>
+                    <CardTitle>Evolución PEN/USD</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 flex-1">
                   {recentConversionsList.length > 0 ? (
-                    <div className="flow-root">
-                        <ul role="list" className="divide-y divide-border">
+                    <div className="flow-root h-full">
+                        <ul role="list" className="divide-y divide-border h-full flex flex-col">
                             {recentConversionsList.map((conv) => {
                                 const isPositive = conv.change >= 0;
                                 return (
-                                    <li key={conv.time} className="px-6 py-3 flex items-center justify-between">
-                                        <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
+                                    <li key={conv.time} className="px-6 py-3 flex items-center justify-between flex-1">
+                                        <div>
+                                          <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
+                                          <p className="text-xs text-muted-foreground capitalize">{conv.date}</p>
+                                        </div>
                                         <div className="ml-4 text-right">
                                             <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
                                             <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive'}`}>
@@ -397,7 +402,9 @@ export default async function Home() {
                         </ul>
                     </div>
                    ) : (
-                    <p className="text-muted-foreground text-center p-6">No hay datos de conversiones recientes.</p>
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-muted-foreground text-center p-6">No hay datos de conversiones recientes.</p>
+                    </div>
                    )}
                 </CardContent>
              </Card>
