@@ -26,27 +26,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const getTicks = (data: PenUsdChartData[], numTicks: number = 5): string[] => {
-    if (!data || data.length === 0) return [];
+const getTicks = (data: PenUsdChartData[], numTicks: number = 6): string[] => {
+    if (!data || data.length < 2) return [];
+
     const ticks: string[] = [];
-    const dataLength = data.length;
-    const step = dataLength > 1 ? Math.floor((dataLength -1) / (numTicks - 1)) : dataLength;
-    if (step <= 0) return data.map(d => d.date);
-    for (let i = 0; i < dataLength; i += step) {
-        ticks.push(data[i].date);
-    }
-    const lastDate = data[dataLength - 1].date;
-    if (!ticks.includes(lastDate)) {
-        if (ticks.length >= numTicks) {
-           ticks[ticks.length -1] = lastDate;
-        } else {
-           ticks.push(lastDate);
+    const step = Math.ceil(data.length / numTicks);
+
+    for (let i = 0; i < data.length; i += step) {
+        if(data[i]) {
+            ticks.push(data[i].date);
         }
     }
+    
+    // Always include the last data point's date for completeness.
+    const lastDate = data[data.length - 1].date;
+    if (!ticks.includes(lastDate)) {
+        ticks.push(lastDate);
+    }
+    
     return ticks;
 };
 
-const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
+const ChartComponent = ({ data, isYearly = false }: { data: PenUsdChartData[], isYearly?: boolean }) => {
     if (!data || data.length === 0) {
         return (
             <div className="h-[350px] w-full flex items-center justify-center text-muted-foreground">
@@ -55,7 +56,7 @@ const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
         )
     }
 
-    const visibleTicks = getTicks(data, 5);
+    const visibleTicks = isYearly ? getTicks(data, 6) : undefined;
 
     return (
     <div className="h-[350px] w-full">
@@ -75,7 +76,7 @@ const ChartComponent = ({ data }: { data: PenUsdChartData[] }) => {
                     axisLine={false} 
                     tickLine={false}
                     ticks={visibleTicks}
-                    interval="preserveStartEnd"
+                    interval={isYearly ? 'preserveStartEnd' : undefined}
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
@@ -130,7 +131,7 @@ export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
         <ChartComponent data={sixMonthsData} />
       </TabsContent>
       <TabsContent value="year">
-        <ChartComponent data={data} />
+        <ChartComponent data={yearlyData} isYearly={true} />
       </TabsContent>
     </Tabs>
   )
