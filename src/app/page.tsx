@@ -105,24 +105,21 @@ const generateMockPenToUsdData = (): PenUsdChartData[] => {
     const endDate = new Date();
     let value = 0.2750;
 
-    while (currentDate <= endDate) {
-        for (let i = 0; i < Math.floor(Math.random() * 4) + 1; i++) {
-          const change = (Math.random() - 0.5) * 0.001;
-          value += change;
-          value = Math.max(0.26, Math.min(0.29, value));
-          
-          const pointDate = new Date(currentDate);
-          pointDate.setHours(i * 6);
-          
-          if (pointDate > endDate) break;
+    let pointDate = new Date(currentDate);
 
-          data.push({
-              date: `${pointDate.getUTCDate()} ${pointDate.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-              value: value,
-              fullDate: pointDate
-          });
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
+    while (pointDate <= endDate) {
+        const change = (Math.random() - 0.5) * 0.001;
+        value += change;
+        value = Math.max(0.26, Math.min(0.29, value));
+        
+        data.push({
+            date: `${pointDate.getUTCDate()} ${pointDate.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+            value: value,
+            fullDate: new Date(pointDate) // Clone date
+        });
+
+        // Increment by a random number of hours between 4 and 12
+        pointDate.setHours(pointDate.getHours() + Math.floor(Math.random() * 8) + 4);
     }
     return data;
 };
