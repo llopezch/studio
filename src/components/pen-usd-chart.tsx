@@ -26,11 +26,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const getTicks = (data: PenUsdChartData[], numTicks: number = 6): string[] => {
+const getTicks = (data: PenUsdChartData[], timeRange: 'week' | 'month' | '6months' | 'year'): string[] => {
     if (!data || data.length < 2) return [];
 
+    let numTicks = 5; // Default value
+    if (timeRange === 'week') {
+      // For weekly view, show all days if not too many
+      return data.map(d => d.date);
+    } else if (timeRange === 'month') {
+      numTicks = 5; // Approx 1 tick per week
+    } else if (timeRange === '6months') {
+      numTicks = 6; // 1 tick per month
+    } else if (timeRange === 'year') {
+      numTicks = 7; // Approx 1 tick every 2 months
+    }
+
     const ticks: string[] = [];
-    const step = Math.ceil(data.length / numTicks);
+    const step = Math.max(1, Math.floor((data.length - 1) / (numTicks - 1)));
 
     for (let i = 0; i < data.length; i += step) {
         if(data[i]) {
@@ -40,14 +52,20 @@ const getTicks = (data: PenUsdChartData[], numTicks: number = 6): string[] => {
     
     // Always include the last data point's date for completeness.
     const lastDate = data[data.length - 1].date;
-    if (!ticks.includes(lastDate)) {
+    if (ticks.length > 0 && ticks[ticks.length - 1] !== lastDate) {
+        if (ticks.length >= numTicks) {
+            ticks[ticks.length - 1] = lastDate;
+        } else {
+            ticks.push(lastDate);
+        }
+    } else if (ticks.length === 0 && data.length > 0) {
         ticks.push(lastDate);
     }
     
     return ticks;
 };
 
-const ChartComponent = ({ data, isYearly = false }: { data: PenUsdChartData[], isYearly?: boolean }) => {
+const ChartComponent = ({ data, timeRange }: { data: PenUsdChartData[], timeRange: 'week' | 'month' | '6months' | 'year' }) => {
     if (!data || data.length === 0) {
         return (
             <div className="h-[350px] w-full flex items-center justify-center text-muted-foreground">
@@ -56,7 +74,7 @@ const ChartComponent = ({ data, isYearly = false }: { data: PenUsdChartData[], i
         )
     }
 
-    const visibleTicks = isYearly ? getTicks(data, 6) : undefined;
+    const visibleTicks = getTicks(data, timeRange);
 
     return (
     <div className="h-[350px] w-full">
@@ -76,7 +94,7 @@ const ChartComponent = ({ data, isYearly = false }: { data: PenUsdChartData[], i
                     axisLine={false} 
                     tickLine={false}
                     ticks={visibleTicks}
-                    interval={isYearly ? 'preserveStartEnd' : undefined}
+                    interval="preserveStartEnd"
                 />
                 <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
@@ -122,16 +140,16 @@ export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
         <TabsTrigger value="year" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">1 Año</TabsTrigger>
       </TabsList>
       <TabsContent value="week">
-        <ChartComponent data={weeklyData} />
+        <ChartComponent data={weeklyData} timeRange="week" />
       </TabsContent>
       <TabsContent value="month">
-        <ChartComponent data={monthlyData} />
+        <ChartComponent data={monthlyData} timeRange="month" />
       </TabsContent>
       <TabsContent value="6months">
-        <ChartComponent data={sixMonthsData} />
+        <ChartComponent data={sixMonthsData} timeRange="6months" />
       </TabsContent>
       <TabsContent value="year">
-        <ChartComponent data={yearlyData} isYearly={true} />
+        <ChartComponent data={yearlyData} timeRange="year" />
       </TabsContent>
     </Tabs>
   )
