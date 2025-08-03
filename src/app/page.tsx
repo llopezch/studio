@@ -72,6 +72,12 @@ export interface PenUsdChartData {
   fullDate: Date;
 }
 
+export interface RecentConversion {
+  time: string;
+  value: number;
+  change: number;
+}
+
 const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 
 const rlsHelpMessage = (tableName: string) => (
@@ -121,7 +127,7 @@ const generateMockPenToUsdData = (): PenUsdChartData[] => {
     return data;
 };
 
-const generateMockRecentConversions = () => {
+const generateMockRecentConversions = (): RecentConversion[] => {
   const data = [];
   const now = new Date();
   let value = 0.2786;
@@ -131,8 +137,8 @@ const generateMockRecentConversions = () => {
     value += change;
     data.push({
       time: time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
-      value: value.toFixed(4),
-      change: change.toFixed(5)
+      value: value,
+      change: change
     });
   }
   return data;
@@ -145,11 +151,13 @@ export default async function Home() {
   let sunatStartDate: string | null = null;
   let connectionError: { message: string | React.ReactNode } | null = null;
   let hasData = false;
+  let recentConversions: RecentConversion[] = [];
   
   let sunatChartData: SunatChartData[] = [];
 
 
   if (supabase) {
+    // Fetch Banks Data
     const { data: banksResult, error: banksError } = await supabase
       .from('BANCOS')
       .select('Banco, Fecha, Compra, Venta');
@@ -195,7 +203,8 @@ export default async function Home() {
     } else if (banksResult && banksResult.length === 0 && !connectionError) {
       connectionError = { message: "Conectado a Supabase, pero la tabla 'BANCOS' está vacía. Mostrando datos de ejemplo." };
     }
-
+    
+    // Fetch SUNAT Data
     if (!connectionError || (connectionError && !connectionError.message.toString().includes('BANCOS'))) {
       const { data: sunatResult, error: sunatError } = await supabase.from('SUNAT').select('Fecha, Compra, Venta');
       
@@ -230,6 +239,20 @@ export default async function Home() {
           connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
       }
     }
+    
+    // Fetch Recent PEN_USD_RECENT Data
+    const { data: recentResult, error: recentError } = await supabase.from('PEN_USD_RECENT').select('time, value, change').order('created_at', { ascending: false });
+
+    if (recentError) {
+        console.warn("Supabase warning (PEN_USD_RECENT):", recentError.message);
+        // No mostramos error de conexión por esto, simplemente usamos mock data.
+        recentConversions = generateMockRecentConversions();
+    } else if (recentResult && recentResult.length > 0) {
+        recentConversions = recentResult;
+    } else {
+        recentConversions = generateMockRecentConversions();
+    }
+
 
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
@@ -238,6 +261,9 @@ export default async function Home() {
   if (!hasData) {
       banksData = mockBanksData;
   }
+   if (recentConversions.length === 0){
+     recentConversions = generateMockRecentConversions();
+   }
 
   const bestBuy = banksData.length > 0 ? Math.max(...banksData.map(b => b.buy)) : 0;
   const bestSell = banksData.length > 0 ? Math.min(...banksData.map(b => b.sell)) : 0;
@@ -247,7 +273,6 @@ export default async function Home() {
   const bestSellBank = banksData.find(b => b.sell === bestSell)?.name;
 
   const mockPenToUsd = generateMockPenToUsdData();
-  const mockRecentConversions = generateMockRecentConversions();
   const latestPenToUsd = mockPenToUsd[mockPenToUsd.length - 1]?.value || 0;
   const previousPenToUsd = mockPenToUsd[mockPenToUsd.length - 2]?.value || 0;
   const penToUsdChange = latestPenToUsd - previousPenToUsd;
@@ -363,15 +388,15 @@ export default async function Home() {
                 <CardContent className="p-0">
                     <div className="flow-root">
                         <ul role="list" className="divide-y divide-border">
-                            {mockRecentConversions.map((conv) => {
-                                const isPositive = parseFloat(conv.change) >= 0;
+                            {recentConversions.map((conv) => {
+                                const isPositive = conv.change >= 0;
                                 return (
                                     <li key={conv.time} className="px-6 py-3 flex items-center justify-between">
                                         <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
                                         <div className="ml-4 text-right">
-                                            <p className="font-semibold text-foreground">{conv.value}</p>
+                                            <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
                                             <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive'}`}>
-                                                {isPositive ? '+' : ''}{conv.change}
+                                                {isPositive ? '+' : ''}{conv.change.toFixed(5)}
                                             </div>
                                         </div>
                                     </li>
