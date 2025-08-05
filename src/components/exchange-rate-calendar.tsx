@@ -30,11 +30,6 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     setDisplayDate(initialDate);
   }, []); // Empty dependency array ensures this runs only once on client mount.
   
-  // Debugging log as requested by user
-  React.useEffect(() => {
-    console.log("Datos recibidos en calendario:", { rates, startDate });
-  },[rates, startDate]);
-
   if (!displayDate) {
     // Render a skeleton or loading state on the server and initial client render
     return (
