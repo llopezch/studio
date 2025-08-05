@@ -120,6 +120,7 @@ export default async function Home() {
 
 
   if (supabase) {
+    const now = new Date().toISOString();
     // Fetch Banks Data
     const { data: banksResult, error: banksError } = await supabase
       .from('BANCOS')
@@ -214,6 +215,7 @@ export default async function Home() {
     const { data: recentResult, error: recentError } = await supabase
       .from('update_30min')
       .select('fechahora, cierre')
+      .lte('fechahora', now)
       .order('fechahora', { ascending: false })
       .limit(10);
       
@@ -239,6 +241,7 @@ export default async function Home() {
     const { data: annualResult, error: annualError } = await supabase
         .from('updateanual')
         .select('fechahora, cierre')
+        .lte('fechahora', now)
         .order('fechahora', { ascending: true });
 
     if (annualError && !isObjectEmpty(annualError)) {
