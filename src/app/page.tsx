@@ -124,7 +124,7 @@ export default async function Home() {
       .from('BANCOS')
       .select('Banco, Fecha, Compra, Venta');
     
-    if (banksError && isObjectEmpty(banksError)) {
+    if (banksError && !isObjectEmpty(banksError)) {
         connectionError = { message: rlsHelpMessage('BANCOS') };
     } else if (banksError) {
         console.error("Supabase error (BANCOS):", banksError);
@@ -170,7 +170,7 @@ export default async function Home() {
     if (!connectionError || (connectionError && !connectionError.message.toString().includes('BANCOS'))) {
       const { data: sunatResult, error: sunatError } = await supabase.from('SUNAT').select('Fecha, Compra, Venta');
       
-      if (sunatError && isObjectEmpty(sunatError)) {
+      if (sunatError && !isObjectEmpty(sunatError)) {
           connectionError = { message: rlsHelpMessage('SUNAT') };
       } else if (sunatError) {
           console.error("Supabase error (SUNAT):", sunatError);
@@ -209,7 +209,7 @@ export default async function Home() {
       .order('fechahora', { ascending: false })
       .limit(10);
       
-    if (recentError && isObjectEmpty(recentError)) {
+    if (recentError && !isObjectEmpty(recentError)) {
         connectionError = { message: rlsHelpMessage('update_30min') };
     } else if (recentError) {
         console.error("Supabase error (update_30min):", recentError);
@@ -233,7 +233,7 @@ export default async function Home() {
         .select('fechahora, cierre')
         .order('fechahora', { ascending: true });
 
-    if (annualError && isObjectEmpty(annualError)) {
+    if (annualError && !isObjectEmpty(annualError)) {
         connectionError = { message: rlsHelpMessage('updateanual') };
     } else if (annualError) {
         console.error("Supabase error (updateanual):", annualError);
@@ -380,27 +380,25 @@ export default async function Home() {
                 </CardHeader>
                 <CardContent className="p-0 flex-1">
                   {recentConversionsList.length > 0 ? (
-                    <div className="flow-root h-full">
-                        <ul role="list" className="divide-y divide-border h-full flex flex-col">
-                            {recentConversionsList.map((conv) => {
-                                const isPositive = conv.change >= 0;
-                                return (
-                                    <li key={conv.time} className="px-6 py-3 flex items-center justify-between flex-1">
-                                        <div>
-                                          <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
-                                          <p className="text-xs text-muted-foreground capitalize">{conv.date}</p>
+                    <ul role="list" className="divide-y divide-border">
+                        {recentConversionsList.map((conv) => {
+                            const isPositive = conv.change >= 0;
+                            return (
+                                <li key={conv.time} className="px-6 py-3 flex items-center justify-between">
+                                    <div>
+                                      <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
+                                      <p className="text-xs text-muted-foreground capitalize">{conv.date}</p>
+                                    </div>
+                                    <div className="ml-4 text-right">
+                                        <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
+                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive'}`}>
+                                            {isPositive ? '+' : ''}{conv.change.toFixed(5)}
                                         </div>
-                                        <div className="ml-4 text-right">
-                                            <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
-                                            <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive'}`}>
-                                                {isPositive ? '+' : ''}{conv.change.toFixed(5)}
-                                            </div>
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
                    ) : (
                     <div className="h-full flex items-center justify-center">
                       <p className="text-muted-foreground text-center p-6">No hay datos de conversiones recientes.</p>
