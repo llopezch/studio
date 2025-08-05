@@ -88,7 +88,7 @@ const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.
 
 const rlsHelpMessage = (tableName: string) => (
   <>
-    <span>No se pudieron obtener datos de la tabla <strong>'{tableName}'</strong>. Esto puede ocurrir si la 'Seguridad a Nivel de Fila' (RLS) está activada y no existe una política que permita el acceso.</span>
+    <span>No se pudieron obtener datos de la tabla <strong>`{tableName}`</strong>. Esto puede ocurrir si la 'Seguridad a Nivel de Fila' (RLS) está activada y no existe una política que permita el acceso.</span>
     <br /><br />
     <span>Para solucionarlo, puedes ir al <strong>Editor SQL</strong> en tu proyecto de Supabase y ejecutar el siguiente comando para crear una política de acceso público de solo lectura:</span>
     <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-sm">
@@ -391,7 +391,7 @@ export default async function Home() {
                                     </div>
                                     <div className="ml-4 text-right">
                                         <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
-                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive'}`}>
+                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
                                             {isPositive ? '+' : ''}{conv.change.toFixed(5)}
                                         </div>
                                     </div>
