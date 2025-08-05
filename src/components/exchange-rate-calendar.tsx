@@ -142,7 +142,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
             <div key={day} className="p-1">
               <div className={cn(
                 "flex flex-col items-center justify-center h-16 rounded-md border text-sm relative",
-                isToday && "ring-2 ring-primary",
+                isToday && "ring-2 ring-primary dark:ring-primary/50",
                 !hasData && "border-dashed",
                 hasData && rateType === 'buy' && "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20",
                 hasData && rateType === 'sell' && "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/20"
