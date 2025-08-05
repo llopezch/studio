@@ -41,8 +41,8 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
             <Image 
               src={logoUrl} 
               alt={`${name} logo`} 
-              layout="fill" 
-              objectFit="contain"
+              fill={true}
+              style={{ objectFit: 'contain' }}
               unoptimized 
             />
           </div>
