@@ -182,6 +182,7 @@ export default async function Home() {
 
             const filteredSunatData = (sunatResult as SupabaseSunatData[]).filter(item => {
                 const itemDate = new Date(item.Fecha + 'T00:00:00Z');
+                itemDate.setUTCHours(0,0,0,0);
                 return itemDate <= today;
             });
             
@@ -458,4 +459,5 @@ export default async function Home() {
     
 
     
+
 
