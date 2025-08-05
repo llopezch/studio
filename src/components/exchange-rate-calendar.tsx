@@ -22,20 +22,13 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
   React.useEffect(() => {
-    // This code runs only on the client, after the initial render.
-    // This avoids the hydration mismatch error.
-    let initialDate = new Date();
-    // If a start date from Supabase is provided, use it.
-    if (startDate) {
-        // The startDate is YYYY-MM-DD, so we create a Date object from it.
-        // Appending 'T00:00:00Z' ensures parsing in UTC to avoid timezone shifts.
-        const parts = startDate.split('-').map(Number);
-        initialDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-    } else {
-        initialDate.setUTCHours(0, 0, 0, 0);
-    }
+    // This code runs only on the client, after the initial render,
+    // to ensure the initial date is always the current date.
+    // This avoids hydration mismatch errors and aligns with user expectation.
+    const initialDate = new Date();
+    initialDate.setUTCHours(0, 0, 0, 0);
     setDisplayDate(initialDate);
-  }, [startDate]);
+  }, []); // Empty dependency array ensures this runs only once on client mount.
   
   // Debugging log as requested by user
   React.useEffect(() => {
