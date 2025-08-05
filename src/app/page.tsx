@@ -376,7 +376,7 @@ export default async function Home() {
              <Card className="lg:col-span-1 flex flex-col">
                 <CardHeader className="flex-row items-center gap-2 space-y-0">
                     <DollarSign className="h-6 w-6 text-primary"/>
-                    <CardTitle>Evolución PEN/USD</CardTitle>
+                    <CardTitle>Cambios Recientes (PEN/USD)</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0 flex-1">
                   {recentConversionsList.length > 0 ? (
@@ -411,7 +411,7 @@ export default async function Home() {
             <div className="lg:col-span-2">
               <Card>
                   <CardHeader>
-                    <CardTitle>Información sobre la conversión de PEN a USD</CardTitle>
+                    <CardTitle>Evolución Anual (PEN a USD)</CardTitle>
                   </CardHeader>
                   <CardContent className="pl-2 pr-6 pb-6">
                    {penToUsdData.length > 0 ? (
