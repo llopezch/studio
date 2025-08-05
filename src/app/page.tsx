@@ -88,9 +88,9 @@ const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.
 
 const rlsHelpMessage = (tableName: string) => (
   <>
-    <span>No se pudieron obtener datos de la tabla <strong>'{tableName}'</strong>. Esto suele ocurrir cuando la 'Seguridad a Nivel de Fila' (RLS) está activada y no existe una política que permita la lectura de datos.</span>
+    <span>No se pudieron obtener datos de la tabla <strong>'{tableName}'</strong>. Esto puede ocurrir si la 'Seguridad a Nivel de Fila' (RLS) está activada y no existe una política que permita el acceso.</span>
     <br /><br />
-    <span>Para solucionarlo, puedes ir al <strong>Editor SQL</strong> en tu proyecto de Supabase y ejecutar el siguiente comando para crear una política que permita el acceso público de solo lectura a tu tabla:</span>
+    <span>Para solucionarlo, puedes ir al <strong>Editor SQL</strong> en tu proyecto de Supabase y ejecutar el siguiente comando para crear una política de acceso público de solo lectura:</span>
     <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-sm">
       {`CREATE POLICY "Enable read access for all users" ON "public"."${tableName}" FOR SELECT USING (true);`}
     </pre>
@@ -128,7 +128,7 @@ export default async function Home() {
         connectionError = { message: rlsHelpMessage('BANCOS') };
     } else if (banksError) {
         console.error("Supabase error (BANCOS):", banksError);
-        connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}` };
+        connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}.` };
     } else if (banksResult && banksResult.length > 0) {
       const allBankData = banksResult as SupabaseBankData[];
       const dataByDate: { [key: string]: SupabaseBankData[] } = allBankData.reduce((acc, item) => {
@@ -174,7 +174,7 @@ export default async function Home() {
           connectionError = { message: rlsHelpMessage('SUNAT') };
       } else if (sunatError) {
           console.error("Supabase error (SUNAT):", sunatError);
-          connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}` };
+          connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}.` };
       } else if (sunatResult && sunatResult.length > 0) {
           const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
           sunatData = supabaseSunatData.reduce((acc, item) => {
@@ -213,7 +213,7 @@ export default async function Home() {
         connectionError = { message: rlsHelpMessage('update_30min') };
     } else if (recentError) {
         console.error("Supabase error (update_30min):", recentError);
-        connectionError = { message: `Error al consultar la tabla 'update_30min': ${recentError.message}` };
+        connectionError = { message: `Error al consultar la tabla 'update_30min': ${recentError.message}.` };
     } else if (recentResult && recentResult.length > 0) {
         recentConversions = recentResult.map((item, index, arr) => {
             const currentValue = item.cierre;
@@ -237,7 +237,7 @@ export default async function Home() {
         connectionError = { message: rlsHelpMessage('updateanual') };
     } else if (annualError) {
         console.error("Supabase error (updateanual):", annualError);
-        connectionError = { message: `Error al consultar la tabla 'updateanual': ${annualError.message}` };
+        connectionError = { message: `Error al consultar la tabla 'updateanual': ${annualError.message}.` };
     } else if (annualResult && annualResult.length > 0) {
         penToUsdData = annualResult.map(item => {
             const dateObj = new Date(item.fechahora);
@@ -374,7 +374,7 @@ export default async function Home() {
 
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
              <Card className="lg:col-span-1 flex flex-col">
-                <CardHeader className="flex-row items-center gap-2 space-y-0">
+                <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
                     <DollarSign className="h-6 w-6 text-primary"/>
                     <CardTitle>Cambios Recientes (PEN/USD)</CardTitle>
                 </CardHeader>
@@ -410,31 +410,35 @@ export default async function Home() {
               <Card>
                   <CardHeader>
                     <CardTitle>Evolución Anual (PEN a USD)</CardTitle>
+                    <CardDescription>
+                        {latestPenToUsd > 0 ? 'Último valor registrado frente al día anterior.' : 'No hay datos suficientes para mostrar.'}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="pl-2 pr-6 pb-6">
                    {penToUsdData.length > 0 ? (
                     <>
-                     <div className="p-4">
-                        <div className="flex items-baseline gap-4">
-                            <div className="text-3xl font-bold">
-                               {latestPenToUsd.toFixed(4)}
-                               <span className="text-sm font-normal text-muted-foreground ml-2">USD</span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                               <span className={`flex items-center font-semibold ${penToUsdChange >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-                                   <ArrowUp className={`h-4 w-4 mr-1 ${penToUsdChange < 0 && 'rotate-180'}`} />
-                                   {penToUsdChange.toFixed(4)} ({penToUsdChangePercent.toFixed(2)}%)
-                               </span>
+                     {latestPenToUsd > 0 && 
+                        <div className="p-4 pt-0">
+                            <div className="flex items-baseline gap-4">
+                                <div className="text-3xl font-bold">
+                                   {latestPenToUsd.toFixed(4)}
+                                   <span className="text-sm font-normal text-muted-foreground ml-2">USD</span>
+                                </div>
+                                <div className="flex items-center text-sm">
+                                   <span className={`flex items-center font-semibold ${penToUsdChange >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                                       <ArrowUp className={`h-4 w-4 mr-1 ${penToUsdChange < 0 && 'rotate-180'}`} />
+                                       {penToUsdChange.toFixed(4)} ({penToUsdChangePercent.toFixed(2)}%)
+                                   </span>
+                                </div>
                             </div>
                         </div>
-                        <div className="text-muted-foreground text-sm mt-1">
-                            frente al día anterior
-                        </div>
-                     </div>
+                     }
                      <PenUsdChart data={penToUsdData} />
                     </>
                     ) : (
-                      <p className="text-muted-foreground text-center p-6">No hay suficientes datos para mostrar el gráfico.</p>
+                      <div className="h-[400px] flex items-center justify-center">
+                        <p className="text-muted-foreground text-center p-6">No hay datos para mostrar el gráfico.</p>
+                      </div>
                     )}
                   </CardContent>
               </Card>
