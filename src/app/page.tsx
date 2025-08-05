@@ -228,7 +228,7 @@ export default async function Home() {
             const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
             const change = currentValue - previousValue;
             const dateObj = new Date(item.fechahora);
-            const time = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const time = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false });
             
             return { id: item.fechahora, time, value: currentValue, change };
         });
