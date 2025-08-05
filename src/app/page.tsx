@@ -429,6 +429,9 @@ export default async function Home() {
                                </span>
                             </div>
                         </div>
+                        <div className="text-muted-foreground text-sm mt-1">
+                            frente al día anterior
+                        </div>
                      </div>
                      <PenUsdChart data={penToUsdData} />
                     </>
@@ -445,6 +448,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
-
