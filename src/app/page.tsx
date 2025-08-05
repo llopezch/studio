@@ -88,9 +88,9 @@ const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.
 
 const rlsHelpMessage = (tableName: string) => (
   <>
-    <span>No se pudieron obtener los datos de la tabla '{tableName}'. Esto usualmente se debe a que la 'Seguridad a Nivel de Fila' (RLS) está habilitada y no hay una política que permita la lectura.</span>
+    <span>No se pudieron obtener datos de la tabla <strong>'{tableName}'</strong>. Esto suele ocurrir cuando la 'Seguridad a Nivel de Fila' (RLS) está activada y no existe una política que permita la lectura de datos.</span>
     <br /><br />
-    <span>Para solucionarlo, ve al <b>SQL Editor</b> en tu proyecto de Supabase y ejecuta la siguiente consulta para permitir el acceso de lectura público a tu tabla:</span>
+    <span>Para solucionarlo, puedes ir al <strong>Editor SQL</strong> en tu proyecto de Supabase y ejecutar el siguiente comando para crear una política que permita el acceso público de solo lectura a tu tabla:</span>
     <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-sm">
       {`CREATE POLICY "Enable read access for all users" ON "public"."${tableName}" FOR SELECT USING (true);`}
     </pre>
