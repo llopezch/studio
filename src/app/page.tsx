@@ -78,8 +78,8 @@ export interface PenUsdChartData {
 }
 
 export interface RecentConversion {
+  id: string;
   time: string;
-  date: string;
   value: number;
   change: number;
 }
@@ -120,7 +120,6 @@ export default async function Home() {
 
 
   if (supabase) {
-    const now = new Date().toISOString();
     // Fetch Banks Data
     const { data: banksResult, error: banksError } = await supabase
       .from('BANCOS')
@@ -215,7 +214,6 @@ export default async function Home() {
     const { data: recentResult, error: recentError } = await supabase
       .from('update_30min')
       .select('fechahora, cierre')
-      .lte('fechahora', now)
       .order('fechahora', { ascending: false })
       .limit(10);
       
@@ -230,10 +228,9 @@ export default async function Home() {
             const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
             const change = currentValue - previousValue;
             const dateObj = new Date(item.fechahora);
-            const time = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: true });
-            const date = dateObj.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }).replace('.','');
+            const time = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
             
-            return { time, date, value: currentValue, change };
+            return { id: item.fechahora, time, value: currentValue, change };
         });
     }
 
@@ -241,7 +238,6 @@ export default async function Home() {
     const { data: annualResult, error: annualError } = await supabase
         .from('updateanual')
         .select('fechahora, cierre')
-        .lte('fechahora', now)
         .order('fechahora', { ascending: true });
 
     if (annualError && !isObjectEmpty(annualError)) {
@@ -395,14 +391,11 @@ export default async function Home() {
                         {recentConversionsList.map((conv) => {
                             const isPositive = conv.change >= 0;
                             return (
-                                <li key={conv.time} className="px-6 py-3 flex items-center justify-between">
-                                    <div>
-                                      <p className="text-sm font-medium text-foreground truncate">{conv.time}</p>
-                                      <p className="text-xs text-muted-foreground capitalize">{conv.date}</p>
-                                    </div>
+                                <li key={conv.id} className="px-6 py-3 flex items-center justify-between">
+                                    <p className="text-sm font-medium text-muted-foreground truncate">{conv.time}</p>
                                     <div className="ml-4 text-right">
                                         <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
-                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
+                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100/80 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
                                             {isPositive ? '+' : ''}{conv.change.toFixed(5)}
                                         </div>
                                     </div>
@@ -461,5 +454,7 @@ export default async function Home() {
     </div>
   );
 }
+
+    
 
     
