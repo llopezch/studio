@@ -142,7 +142,7 @@ export function PenUsdChart({ data }: { data: PenUsdChartData[] }) {
   const yearlyData = filterData(365);
 
   return (
-    <Tabs defaultValue="year">
+    <Tabs defaultValue="6months">
       <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b mb-4">
         <TabsTrigger value="week" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Semana</TabsTrigger>
         <TabsTrigger value="month" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Mes</TabsTrigger>
