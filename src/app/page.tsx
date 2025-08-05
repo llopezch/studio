@@ -87,15 +87,16 @@ export interface RecentConversion {
 const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
 
 const rlsHelpMessage = (tableName: string) => (
-  <>
-    <span>No se pudieron obtener datos de la tabla <strong>`{tableName}`</strong>. Esto puede ocurrir si la 'Seguridad a Nivel de Fila' (RLS) está activada y no existe una política que permita el acceso.</span>
-    <br /><br />
-    <span>Para solucionarlo, puedes ir al <strong>Editor SQL</strong> en tu proyecto de Supabase y ejecutar el siguiente comando para crear una política de acceso público de solo lectura:</span>
-    <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-sm">
-      {`CREATE POLICY "Enable read access for all users" ON "public"."${tableName}" FOR SELECT USING (true);`}
-    </pre>
-  </>
+    <>
+        <span>No se pudieron obtener datos de la tabla <strong>`{tableName}`</strong>. Esto puede ocurrir si la 'Seguridad a Nivel de Fila' (RLS) está activada y no existe una política que permita el acceso.</span>
+        <br /><br />
+        <span>Para solucionarlo, puedes ir al <strong>Editor SQL</strong> en tu proyecto de Supabase y ejecutar el siguiente comando para crear una política de acceso público de solo lectura:</span>
+        <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-sm">
+            {`CREATE POLICY "Enable read access for all users" ON "public"."${tableName}" FOR SELECT USING (true);`}
+        </pre>
+    </>
 );
+
 
 export const toDateKey = (date: Date): string => {
   const year = date.getUTCFullYear();
@@ -168,38 +169,45 @@ export default async function Home() {
     
     // Fetch SUNAT Data
     if (!connectionError || (connectionError && !connectionError.message.toString().includes('BANCOS'))) {
-      const { data: sunatResult, error: sunatError } = await supabase.from('SUNAT').select('Fecha, Compra, Venta');
-      
-      if (sunatError && !isObjectEmpty(sunatError)) {
-          connectionError = { message: rlsHelpMessage('SUNAT') };
-      } else if (sunatError) {
-          console.error("Supabase error (SUNAT):", sunatError);
-          connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}.` };
-      } else if (sunatResult && sunatResult.length > 0) {
-          const supabaseSunatData = (sunatResult as SupabaseSunatData[]).sort((a, b) => new Date(a.Fecha).getTime() - new Date(b.Fecha).getTime());
-          sunatData = supabaseSunatData.reduce((acc, item) => {
-              if (item.Fecha) {
-                  const dateKey = toDateKey(new Date(item.Fecha + 'T00:00:00Z'));
-                  acc[dateKey] = { buy: item.Compra, sell: item.Venta };
-              }
-              return acc;
-          }, {} as SunatData);
+        const { data: sunatResult, error: sunatError } = await supabase.from('SUNAT').select('Fecha, Compra, Venta').order('Fecha', { ascending: true });
+        
+        if (sunatError && !isObjectEmpty(sunatError)) {
+            connectionError = { message: rlsHelpMessage('SUNAT') };
+        } else if (sunatError) {
+            console.error("Supabase error (SUNAT):", sunatError);
+            connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}.` };
+        } else if (sunatResult && sunatResult.length > 0) {
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0);
 
-          sunatChartData = supabaseSunatData.map(item => {
-              const dateObj = new Date(item.Fecha + 'T00:00:00Z');
-              return {
-                  date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-                  value: item.Compra,
-                  fullDate: dateObj,
-              };
-          });
+            const filteredSunatData = (sunatResult as SupabaseSunatData[]).filter(item => {
+                const itemDate = new Date(item.Fecha + 'T00:00:00Z');
+                return itemDate <= today;
+            });
+            
+            sunatData = filteredSunatData.reduce((acc, item) => {
+                if (item.Fecha) {
+                    const dateKey = toDateKey(new Date(item.Fecha + 'T00:00:00Z'));
+                    acc[dateKey] = { buy: item.Compra, sell: item.Venta };
+                }
+                return acc;
+            }, {} as SunatData);
 
-          if (supabaseSunatData[0]?.Fecha) {
-              sunatStartDate = toDateKey(new Date(supabaseSunatData[0].Fecha + 'T00:00:00Z'));
-          }
-      } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
-          connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
-      }
+            sunatChartData = filteredSunatData.map(item => {
+                const dateObj = new Date(item.Fecha + 'T00:00:00Z');
+                return {
+                    date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+                    value: item.Compra,
+                    fullDate: dateObj,
+                };
+            });
+
+            if (filteredSunatData[0]?.Fecha) {
+                sunatStartDate = toDateKey(new Date(filteredSunatData[0].Fecha + 'T00:00:00Z'));
+            }
+        } else if (sunatResult && sunatResult.length === 0 && !connectionError) {
+            connectionError = { message: "Conectado a Supabase, pero la tabla 'SUNAT' está vacía." };
+        }
     }
     
     // Fetch Recent Conversions from 'update_30min'
@@ -450,3 +458,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
