@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { PenUsdChart } from '@/components/pen-usd-chart';
+import { RecentChangesCard } from '@/components/recent-changes-card';
 
 export const dynamic = 'force-dynamic';
 
@@ -227,17 +228,7 @@ export default async function Home() {
             const currentValue = item.cierre;
             const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
             const change = currentValue - previousValue;
-            
-            const dateObj = new Date(item.fechahora);
-            // Format time correctly for Peruvian timezone in 24-hour format
-            const time = dateObj.toLocaleTimeString('es-PE', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-              timeZone: 'America/Lima'
-            }).replace('24:', '00:');
-            
-            return { id: item.fechahora, time, value: currentValue, change };
+            return { id: item.fechahora, time: item.fechahora, value: currentValue, change };
         });
     }
 
@@ -387,36 +378,7 @@ export default async function Home() {
           </section>
 
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-             <Card className="lg:col-span-1 flex flex-col">
-                <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
-                    <DollarSign className="h-6 w-6 text-primary"/>
-                    <CardTitle className="font-headline">Cambios Recientes (PEN/USD)</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 flex-1">
-                  {recentConversionsList.length > 0 ? (
-                    <ul role="list" className="divide-y divide-border">
-                        {recentConversionsList.map((conv) => {
-                            const isPositive = conv.change >= 0;
-                            return (
-                                <li key={conv.id} className="px-6 py-3 flex items-center justify-between">
-                                    <p className="text-sm font-medium text-muted-foreground truncate">{conv.time}</p>
-                                    <div className="ml-4 text-right">
-                                        <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
-                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100/80 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
-                                            {isPositive ? '+' : ''}{(conv.change.toFixed(5))}
-                                        </div>
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                   ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p className="text-muted-foreground text-center p-6">No hay datos de conversiones recientes.</p>
-                    </div>
-                   )}
-                </CardContent>
-             </Card>
+             <RecentChangesCard conversions={recentConversionsList} />
             <div className="lg:col-span-2">
               <Card>
                   <CardHeader>
@@ -461,5 +423,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
