@@ -47,7 +47,7 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
                                 <li key={conv.id} className="px-6 py-3 flex items-center justify-between">
                                     <p className="text-sm font-medium text-muted-foreground truncate">{currentTime || conv.time}</p>
                                     <div className="ml-4 text-right">
-                                        <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
+                                        <p className="font-semibold text-foreground">{conv.value.toFixed(5)}</p>
                                         <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100/80 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
                                             {isPositive ? '+' : ''}{(conv.change.toFixed(5))}
                                         </div>
