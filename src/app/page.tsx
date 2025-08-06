@@ -177,13 +177,10 @@ export default async function Home() {
             console.error("Supabase error (SUNAT):", sunatError);
             connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}.` };
         } else if (sunatResult && sunatResult.length > 0) {
-            // Get current date in Lima timezone
             const nowInLima = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-            nowInLima.setHours(0, 0, 0, 0); // Normalize to beginning of the day in Lima
+            nowInLima.setHours(0, 0, 0, 0);
 
             const filteredSunatData = (sunatResult as SupabaseSunatData[]).filter(item => {
-                // The date from Supabase is treated as a UTC date string 'YYYY-MM-DD'
-                // We create a UTC date object from it to avoid local timezone shifts
                 const itemDate = new Date(item.Fecha + 'T00:00:00Z');
                 return itemDate <= nowInLima;
             });
@@ -230,13 +227,15 @@ export default async function Home() {
             const currentValue = item.cierre;
             const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
             const change = currentValue - previousValue;
+            
             const dateObj = new Date(item.fechahora);
-            const time = new Intl.DateTimeFormat('es-PE', {
+            // Format time correctly for Peruvian timezone in 24-hour format
+            const time = dateObj.toLocaleTimeString('es-PE', {
               hour: '2-digit',
               minute: '2-digit',
               hour12: false,
               timeZone: 'America/Lima'
-            }).format(dateObj);
+            }).replace('24:', '00:');
             
             return { id: item.fechahora, time, value: currentValue, change };
         });
@@ -404,7 +403,7 @@ export default async function Home() {
                                     <div className="ml-4 text-right">
                                         <p className="font-semibold text-foreground">{conv.value.toFixed(4)}</p>
                                         <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100/80 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
-                                            {isPositive ? '+' : ''}{conv.change.toFixed(5)}
+                                            {isPositive ? '+' : ''}{(conv.change.toFixed(5))}
                                         </div>
                                     </div>
                                 </li>
