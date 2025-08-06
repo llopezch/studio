@@ -231,8 +231,12 @@ export default async function Home() {
             const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
             const change = currentValue - previousValue;
             const dateObj = new Date(item.fechahora);
-            // Correctly format time to 24-hour format
-            const time = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('24:', '00:');
+            const time = new Intl.DateTimeFormat('es-PE', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'America/Lima'
+            }).format(dateObj);
             
             return { id: item.fechahora, time, value: currentValue, change };
         });
@@ -458,3 +462,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
