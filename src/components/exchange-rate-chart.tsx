@@ -72,7 +72,7 @@ const getTicks = (data: ChartData[], numTicks: number = 5): string[] => {
 const ChartComponent = ({ data, timeRange }: { data: any[], timeRange: 'week' | 'month' }) => {
     if (!data || data.length === 0) {
         return (
-            <div className="h-[300px] w-full flex items-center justify-center text-muted-foreground">
+            <div className="h-[350px] w-full flex items-center justify-center text-muted-foreground">
                 No hay suficientes datos para mostrar el gráfico.
             </div>
         )
@@ -81,7 +81,7 @@ const ChartComponent = ({ data, timeRange }: { data: any[], timeRange: 'week' | 
     const visibleTicks = getTicks(data, timeRange === 'month' ? 5 : 4);
 
     return (
-    <div className="h-[300px] w-full">
+    <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <defs>
