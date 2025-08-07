@@ -51,7 +51,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
             <div className="grid grid-cols-7 mt-2">
                 {Array.from({ length: 35 }).map((_, i) => (
                     <div key={i} className="p-1">
-                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-14 w-full" />
                     </div>
                 ))}
             </div>
@@ -133,7 +133,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
           return (
             <div key={day} className="p-1">
               <div className={cn(
-                "flex flex-col items-center justify-center h-16 rounded-md border text-sm relative",
+                "flex flex-col items-center justify-center h-14 rounded-md border text-sm relative",
                 isToday && "ring-2 ring-primary dark:ring-primary/50",
                 !hasData && "border-dashed",
                 hasData && rateType === 'buy' && "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20",
