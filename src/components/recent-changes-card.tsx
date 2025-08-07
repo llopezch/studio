@@ -46,7 +46,7 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
         <Card className="lg:col-span-1 flex flex-col">
             <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
                 <DollarSign className="h-6 w-6 text-primary" />
-                <CardTitle className="font-headline text-xl">Cambios Recientes (PEN/USD)</CardTitle>
+                <CardTitle className="font-headline text-lg">Cambios Recientes (PEN/USD)</CardTitle>
             </CardHeader>
             <CardContent className="p-0 flex-1">
                 {displayList.length > 0 ? (
