@@ -11,6 +11,7 @@ import { Terminal } from 'lucide-react';
 import { ExchangeRateChart } from '@/components/exchange-rate-chart';
 import { PenUsdChart } from '@/components/pen-usd-chart';
 import { RecentChangesCard } from '@/components/recent-changes-card';
+import { RefreshButton } from '@/components/refresh-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -329,10 +330,7 @@ export default async function Home() {
               </div>
               <h1 className="text-3xl font-bold font-headline text-white">Panel de Tipos de Cambio</h1>
           </div>
-          <Button variant="outline" className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-[hsl(var(--header-background))]">
-            <RefreshCw className="mr-2" />
-            Actualizar
-          </Button>
+          <RefreshButton />
         </div>
       </header>
 
@@ -466,4 +464,3 @@ export default async function Home() {
     </div>
   );
 }
-
