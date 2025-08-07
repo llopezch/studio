@@ -56,9 +56,9 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     );
   }
 
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const todayKey = toDateKey(today);
+  const todayInLima = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+  todayInLima.setUTCHours(0, 0, 0, 0);
+  const todayKey = toDateKey(todayInLima);
 
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
   const year = displayDate.getUTCFullYear();
