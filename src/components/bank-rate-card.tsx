@@ -37,7 +37,7 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
     <Card>
       <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-28 h-12 relative flex items-center justify-center">
+          <div className="w-32 h-16 relative flex items-center justify-center">
             <Image 
               src={logoUrl} 
               alt={`${name} logo`} 
