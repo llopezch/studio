@@ -328,7 +328,7 @@ export default async function Home() {
                 <ChevronRight className="h-4 w-4 mx-1" />
                 <span className="font-semibold">PEN / USD • MONEDA</span>
               </div>
-              <h1 className="text-3xl font-bold font-headline text-white">Panel de Tipos de Cambio</h1>
+              <h1 className="text-2xl font-bold font-headline text-white">Panel de Tipos de Cambio</h1>
           </div>
           <RefreshButton />
         </div>
@@ -464,3 +464,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
