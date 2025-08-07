@@ -79,6 +79,7 @@ const ChartComponent = ({ data, timeRange }: { data: any[], timeRange: 'week' | 
     }
 
     const visibleTicks = getTicks(data, timeRange === 'month' ? 5 : 4);
+    const chartColor = "hsl(var(--primary))";
 
     return (
     <div className="h-[350px] w-full">
@@ -86,8 +87,8 @@ const ChartComponent = ({ data, timeRange }: { data: any[], timeRange: 'week' | 
             <AreaChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <defs>
                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={chartColor} stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
                     </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -109,10 +110,10 @@ const ChartComponent = ({ data, timeRange }: { data: any[], timeRange: 'week' | 
                     tickFormatter={(value) => typeof value === 'number' ? value.toFixed(3) : value}
                 />
                 <Tooltip
-                    cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
+                    cursor={{ stroke: chartColor, strokeWidth: 1, strokeDasharray: '3 3' }}
                     content={<CustomTooltip />}
                 />
-                <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" activeDot={{ r: 6 }}/>
+                <Area type="monotone" dataKey="value" stroke={chartColor} strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" activeDot={{ r: 6 }}/>
             </AreaChart>
         </ResponsiveContainer>
     </div>
