@@ -22,16 +22,21 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
   React.useEffect(() => {
-    // This code runs only on the client, after the initial render,
-    // to ensure the initial date is always the current date.
-    // This avoids hydration mismatch errors and aligns with user expectation.
     const initialDate = new Date();
     initialDate.setUTCHours(0, 0, 0, 0);
     setDisplayDate(initialDate);
-  }, []); // Empty dependency array ensures this runs only once on client mount.
+  }, []);
   
-  if (!displayDate) {
-    // Render a skeleton or loading state on the server and initial client render
+  const [todayKey, setTodayKey] = React.useState('');
+
+  React.useEffect(() => {
+    const limaDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+    limaDate.setHours(0, 0, 0, 0); 
+    setTodayKey(toDateKey(new Date(limaDate.getFullYear(), limaDate.getMonth(), limaDate.getDate())));
+  }, []);
+
+
+  if (!displayDate || !todayKey) {
     return (
         <div className="p-2">
             <div className="flex items-center justify-between mb-4">
@@ -58,11 +63,6 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
         </div>
     );
   }
-
-  const todayInLima = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-  todayInLima.setHours(0, 0, 0, 0); // Use setHours for local time adjustment
-  const todayKey = toDateKey(new Date(todayInLima.getFullYear(), todayInLima.getMonth(), todayInLima.getDate()));
-
 
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
   const year = displayDate.getUTCFullYear();
@@ -134,10 +134,10 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
             <div key={day} className="p-1">
               <div className={cn(
                 "flex flex-col items-center justify-center h-12 rounded-md border text-sm relative",
-                isToday && "ring-2 ring-primary dark:ring-primary/50",
+                isToday && "ring-2 ring-primary/50",
                 !hasData && "border-dashed",
-                hasData && rateType === 'buy' && "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20",
-                hasData && rateType === 'sell' && "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/20"
+                hasData && rateType === 'buy' && "bg-green-900/10 border-green-800/20",
+                hasData && rateType === 'sell' && "bg-red-900/10 border-red-800/20"
               )}>
                 <div className={cn("font-semibold", !hasData && "text-muted-foreground")}>
                   {day}
@@ -145,7 +145,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
                 {hasData && (
                   <div className={cn(
                     "text-xs font-bold",
-                    rateType === 'buy' ? "text-green-700 dark:text-green-400" : "text-destructive"
+                    rateType === 'buy' ? "text-green-400" : "text-destructive"
                   )}>
                     {rateData[rateType].toFixed(3)}
                   </div>

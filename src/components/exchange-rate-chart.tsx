@@ -26,7 +26,7 @@ interface ExchangeRateChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/90 dark:bg-black/90 p-2 rounded-md border border-border shadow-lg">
+      <div className="bg-background/90 p-2 rounded-md border border-border shadow-lg">
         <p className="font-bold text-foreground">{payload[0].value.toFixed(3)}</p>
         <p className="text-sm text-muted-foreground">{label}</p>
       </div>
@@ -120,7 +120,15 @@ const ChartComponent = ({ data, timeRange }: { data: any[], timeRange: 'week' | 
 
 
 export function ExchangeRateChart({ data }: ExchangeRateChartProps) {
-  const now = new Date();
+  const [now, setNow] = React.useState<Date | null>(null);
+
+  React.useEffect(() => {
+    setNow(new Date());
+  }, []);
+
+  if (!now) {
+    return <div className="h-[400px] w-full bg-card rounded-lg flex items-center justify-center"><p className="text-muted-foreground">Cargando gráfico...</p></div>;
+  }
   
   const weeklyData = data.filter(item => {
     const itemDate = item.fullDate;
@@ -136,7 +144,7 @@ export function ExchangeRateChart({ data }: ExchangeRateChartProps) {
 
   return (
     <Tabs defaultValue="week">
-      <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b">
+      <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b border-card-foreground/10">
         <TabsTrigger value="week" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Última Semana</TabsTrigger>
         <TabsTrigger value="month" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Último Mes</TabsTrigger>
       </TabsList>

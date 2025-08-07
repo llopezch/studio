@@ -16,15 +16,15 @@ interface BankRateCardProps {
 
 function RateChange({ value }: { value: number }) {
   const isNegative = value < 0;
-  const isPositive = value >= 0; // Se considera 0 como positivo (verde)
+  const isPositive = value >= 0;
 
   const Icon = isPositive ? ArrowUp : ArrowDown;
   
   return (
     <div className={cn(
       "flex items-center text-xs font-semibold gap-1 px-2 py-1 rounded-full",
-      isPositive && "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400",
-      isNegative && "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-destructive"
+      isPositive && "bg-green-900/20 text-green-400",
+      isNegative && "bg-red-900/20 text-destructive"
     )}>
       <Icon className="h-3 w-3" />
       <span>{isPositive ? '+' : ''}{(value || 0).toFixed(3)}</span>

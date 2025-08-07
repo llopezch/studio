@@ -33,8 +33,6 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
     const [isClient, setIsClient] = React.useState(false);
 
     React.useEffect(() => {
-        // This effect runs only on the client, ensuring dates are formatted on the client-side
-        // to prevent hydration mismatches.
         setFormattedConversions(conversions.map(conv => ({
             ...conv,
             time: formatUpdateTime(conv.time)
@@ -53,10 +51,10 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
             <CardContent className="p-0 flex-1">
                 {displayList.length > 0 ? (
                     <ul role="list" className="divide-y divide-border">
-                        {displayList.map((conv) => {
+                        {displayList.map((conv, index) => {
                             const isPositive = conv.change >= 0;
                             return (
-                                <li key={conv.id} className="px-6 py-3 flex items-center justify-between">
+                                <li key={conv.id || index} className="px-6 py-3 flex items-center justify-between">
                                     {isClient ? (
                                         <p className="text-sm font-medium text-muted-foreground truncate w-28 capitalize">
                                             {conv.time}
@@ -66,7 +64,7 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
                                     )}
                                     <div className="ml-4 text-right">
                                         <p className="font-semibold text-foreground">{conv.value.toFixed(5)}</p>
-                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100/80 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
+                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-900/20 text-green-400' : 'bg-destructive/20 text-destructive'}`}>
                                             {isPositive ? '+' : ''}{(conv.change.toFixed(5))}
                                         </div>
                                     </div>
