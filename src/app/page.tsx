@@ -211,24 +211,40 @@ export default async function Home() {
         }
     }
     
-    // Fetch Recent Conversions from 'update_30min'
+    // Fetch Recent Conversions from 'update_30min' and 'actualizaciones_panel'
     const { data: recentResult, error: recentError } = await supabase
       .from('update_30min')
       .select('fechahora, cierre')
       .order('fechahora', { ascending: false })
       .limit(10);
       
+    const { data: updatesResult, error: updatesError } = await supabase
+      .from('actualizaciones_panel')
+      .select('fechahora')
+      .order('fechahora', { ascending: false })
+      .limit(7);
+
     if (recentError && !isObjectEmpty(recentError)) {
         connectionError = { message: rlsHelpMessage('update_30min') };
-    } else if (recentError) {
-        console.error("Supabase error (update_30min):", recentError);
-        connectionError = { message: `Error al consultar la tabla 'update_30min': ${recentError.message}.` };
-    } else if (recentResult && recentResult.length > 0) {
-        recentConversions = recentResult.map((item, index, arr) => {
+    } else if (updatesError && !isObjectEmpty(updatesError)) {
+        connectionError = { message: rlsHelpMessage('actualizaciones_panel') };
+    } else if (recentError || updatesError) {
+        const errorMessage = recentError?.message || updatesError?.message;
+        const tableName = recentError ? 'update_30min' : 'actualizaciones_panel';
+        console.error(`Supabase error (${tableName}):`, errorMessage);
+        connectionError = { message: `Error al consultar la tabla '${tableName}': ${errorMessage}.` };
+    } else if (recentResult && recentResult.length > 0 && updatesResult && updatesResult.length > 0) {
+        const updateTimes = updatesResult.map(u => u.fechahora);
+        
+        recentConversions = recentResult.slice(0, 7).map((item, index, arr) => {
             const currentValue = item.cierre;
             const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
             const change = currentValue - previousValue;
-            return { id: item.fechahora, time: item.fechahora, value: currentValue, change };
+            
+            // Assign a corresponding update time, fallback to the original time if not available
+            const updateTime = updateTimes[index] || item.fechahora;
+            
+            return { id: item.fechahora, time: updateTime, value: currentValue, change };
         });
     }
 

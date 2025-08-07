@@ -10,27 +10,25 @@ interface RecentChangesCardProps {
     conversions: RecentConversion[];
 }
 
+const formatUpdateTime = (isoString: string): string => {
+    try {
+        const date = new Date(isoString);
+        // Format to show Day, Month, Hour, and Minute in Peru's time zone
+        return new Intl.DateTimeFormat('es-PE', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'America/Lima',
+        }).format(date).replace('.', '');
+    } catch (error) {
+        console.error("Error formatting date:", error);
+        return "Fecha inválida";
+    }
+}
+
 export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
-    const [currentTime, setCurrentTime] = React.useState<string>("");
-
-    React.useEffect(() => {
-        const updateCurrentTime = () => {
-            const time = new Date().toLocaleTimeString('es-PE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-                timeZone: 'America/Lima'
-            }).replace('24:', '00:');
-            setCurrentTime(time);
-        }
-        
-        updateCurrentTime();
-        // Although the time is fetched on mount, you could set up an interval 
-        // to update it every minute if real-time clock display is needed.
-        // const intervalId = setInterval(updateCurrentTime, 60000);
-        // return () => clearInterval(intervalId);
-
-    }, []); // Empty dependency array ensures this runs once on mount
 
     return (
         <Card className="lg:col-span-1 flex flex-col">
@@ -45,7 +43,9 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
                             const isPositive = conv.change >= 0;
                             return (
                                 <li key={conv.id} className="px-6 py-3 flex items-center justify-between">
-                                    <p className="text-sm font-medium text-muted-foreground truncate">{currentTime || conv.time}</p>
+                                    <p className="text-sm font-medium text-muted-foreground truncate w-28 capitalize">
+                                        {formatUpdateTime(conv.time)}
+                                    </p>
                                     <div className="ml-4 text-right">
                                         <p className="font-semibold text-foreground">{conv.value.toFixed(5)}</p>
                                         <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100/80 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-destructive/10 text-destructive'}`}>
