@@ -46,10 +46,7 @@ export function BankRateCard({ name, date, buy, sell, buyChange, sellChange, log
               unoptimized 
             />
           </div>
-          <div>
-            <div className="font-bold">{name}</div>
-            <div className="text-xs text-muted-foreground">{date}</div>
-          </div>
+          <div className="text-xs text-muted-foreground">{date}</div>
         </div>
         <div className="flex gap-6 text-left sm:text-right w-full sm:w-auto justify-around sm:justify-end">
           <div>

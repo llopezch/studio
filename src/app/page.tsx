@@ -20,6 +20,7 @@ const mockBanksData = [
     { name: 'BBVA', created_at: new Date().toISOString(), buy: 3.745, sell: 3.795, buy_change: 0, sell_change: 0, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460305-bbva.svg' },
     { name: 'Scotiabank', created_at: new Date().toISOString(), buy: 3.72, sell: 3.82, buy_change: 0.005, sell_change: -0.002, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg' },
     { name: 'Banco de la Nación', created_at: new Date().toISOString(), buy: 3.73, sell: 3.78, buy_change: 0.001, sell_change: 0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg' },
+    { name: 'Pichincha', created_at: new Date().toISOString(), buy: 3.75, sell: 3.80, buy_change: 0.001, sell_change: 0.001, logo_url: 'https://s3-ced-uploads-01.s3.amazonaws.com/1753482392626-Banco%20Pichincha%20Logo%20128_25.svg' },
 ];
 
 const logos: Record<string, string> = {
@@ -29,6 +30,7 @@ const logos: Record<string, string> = {
     'BBVA': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789460305-bbva.svg',
     'SCOTIABANK': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735789333707-scotiabank.svg',
     'BANCO DE LA NACION': 'https://s3-ced-uploads-01.s3.amazonaws.com/1735795814723-Group%2048095815.svg',
+    'PICHINCHA': 'https://s3-ced-uploads-01.s3.amazonaws.com/1753482392626-Banco%20Pichincha%20Logo%20128_25.svg',
 };
 
 interface SupabaseBankData {
@@ -320,12 +322,12 @@ export default async function Home() {
       <header className="bg-[hsl(var(--header-background))] text-[hsl(var(--header-foreground))] py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-              <div className="flex items-center text-sm mb-2">
+              <div className="flex items-center text-sm mb-2 text-white">
                 <span className="font-semibold text-[hsl(var(--accent-green))]">INICIO</span>
                 <ChevronRight className="h-4 w-4 mx-1" />
                 <span className="font-semibold">PEN / USD • MONEDA</span>
               </div>
-              <h1 className="text-3xl font-bold font-headline">Panel de Tipos de Cambio</h1>
+              <h1 className="text-3xl font-bold font-headline text-white">Panel de Tipos de Cambio</h1>
           </div>
           <Button variant="outline" className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-[hsl(var(--header-background))]">
             <RefreshCw className="mr-2" />
@@ -390,7 +392,7 @@ export default async function Home() {
 
           <section>
             <h2 className="text-2xl font-bold mb-4 font-headline">Tipos de Cambio por Banco</h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
               {banksData.length > 0 ? banksData.map((bank) => (
                 <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { day: 'numeric', month: 'numeric', year: 'numeric', timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
               )) : (
@@ -464,3 +466,4 @@ export default async function Home() {
     </div>
   );
 }
+
