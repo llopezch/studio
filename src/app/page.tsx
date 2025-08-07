@@ -227,8 +227,8 @@ export default async function Home() {
           
         const { data: updatesResult, error: updatesError } = await supabase
           .from('actualizaciones_panel')
-          .select('created_at')
-          .order('created_at', { ascending: false })
+          .select('fechaahora')
+          .order('fechaahora', { ascending: false })
           .limit(7);
 
         if (recentError) {
@@ -254,7 +254,7 @@ export default async function Home() {
         }
         
         if (recentResult && recentResult.length > 0) {
-            const updateTimes = updatesResult ? updatesResult.map(u => u.created_at) : [];
+            const updateTimes = updatesResult ? updatesResult.map(u => u.fechaahora) : [];
             
             recentConversions = recentResult.slice(0, 7).map((item, index, arr) => {
                 const currentValue = item.cierre;
@@ -464,3 +464,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
