@@ -178,12 +178,12 @@ export default async function Home() {
             console.error("Supabase error (SUNAT):", sunatError);
             connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}.` };
         } else if (sunatResult && sunatResult.length > 0) {
-            const nowInLima = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-            nowInLima.setHours(0, 0, 0, 0);
+            const todayInLima = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+            todayInLima.setHours(0, 0, 0, 0);
 
             const filteredSunatData = (sunatResult as SupabaseSunatData[]).filter(item => {
                 const itemDate = new Date(item.Fecha + 'T00:00:00Z');
-                return itemDate <= nowInLima;
+                return itemDate <= todayInLima;
             });
             
             sunatData = filteredSunatData.reduce((acc, item) => {
