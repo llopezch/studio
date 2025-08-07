@@ -85,7 +85,9 @@ export interface RecentConversion {
   change: number;
 }
 
-const isObjectEmpty = (obj: any) => obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+const isRLSError = (error: any): boolean => {
+    return error && error.message && (error.message.includes('security policies') || error.message.includes('violates row-level security policy'));
+};
 
 const rlsHelpMessage = (tableName: string) => (
     <>
@@ -126,11 +128,13 @@ export default async function Home() {
       .from('BANCOS')
       .select('Banco, Fecha, Compra, Venta');
     
-    if (banksError && !isObjectEmpty(banksError)) {
-        connectionError = { message: rlsHelpMessage('BANCOS') };
-    } else if (banksError) {
-        console.error("Supabase error (BANCOS):", banksError);
-        connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}.` };
+    if (banksError) {
+        if (isRLSError(banksError)) {
+            connectionError = { message: rlsHelpMessage('BANCOS') };
+        } else {
+            console.error("Supabase error (BANCOS):", banksError);
+            connectionError = { message: `Error al consultar la tabla 'BANCOS': ${banksError.message}.` };
+        }
     } else if (banksResult && banksResult.length > 0) {
       const allBankData = banksResult as SupabaseBankData[];
       const dataByDate: { [key: string]: SupabaseBankData[] } = allBankData.reduce((acc, item) => {
@@ -169,14 +173,16 @@ export default async function Home() {
     }
     
     // Fetch SUNAT Data
-    if (!connectionError || (connectionError && !connectionError.message.toString().includes('BANCOS'))) {
+    if (!connectionError) {
         const { data: sunatResult, error: sunatError } = await supabase.from('SUNAT').select('Fecha, Compra, Venta').order('Fecha', { ascending: true });
         
-        if (sunatError && !isObjectEmpty(sunatError)) {
-            connectionError = { message: rlsHelpMessage('SUNAT') };
-        } else if (sunatError) {
-            console.error("Supabase error (SUNAT):", sunatError);
-            connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}.` };
+        if (sunatError) {
+            if (isRLSError(sunatError)) {
+                connectionError = { message: rlsHelpMessage('SUNAT') };
+            } else {
+                console.error("Supabase error (SUNAT):", sunatError);
+                connectionError = { message: `Error al consultar la tabla 'SUNAT': ${sunatError.message}.` };
+            }
         } else if (sunatResult && sunatResult.length > 0) {
             const todayInLima = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
             todayInLima.setHours(0, 0, 0, 0);
@@ -212,64 +218,83 @@ export default async function Home() {
     }
     
     // Fetch Recent Conversions from 'update_30min' and 'actualizaciones_panel'
-    const { data: recentResult, error: recentError } = await supabase
-      .from('update_30min')
-      .select('fechahora, cierre')
-      .order('fechahora', { ascending: false })
-      .limit(10);
-      
-    const { data: updatesResult, error: updatesError } = await supabase
-      .from('actualizaciones_panel')
-      .select('fechahora')
-      .order('fechahora', { ascending: false })
-      .limit(7);
+    if (!connectionError) {
+        const { data: recentResult, error: recentError } = await supabase
+          .from('update_30min')
+          .select('fechahora, cierre')
+          .order('fechahora', { ascending: false })
+          .limit(7);
+          
+        const { data: updatesResult, error: updatesError } = await supabase
+          .from('actualizaciones_panel')
+          .select('fechahora')
+          .order('fechahora', { ascending: false })
+          .limit(7);
 
-    if (recentError && !isObjectEmpty(recentError)) {
-        connectionError = { message: rlsHelpMessage('update_30min') };
-    } else if (updatesError && !isObjectEmpty(updatesError)) {
-        connectionError = { message: rlsHelpMessage('actualizaciones_panel') };
-    } else if (recentError || updatesError) {
-        const errorMessage = recentError?.message || updatesError?.message;
-        const tableName = recentError ? 'update_30min' : 'actualizaciones_panel';
-        console.error(`Supabase error (${tableName}):`, errorMessage);
-        connectionError = { message: `Error al consultar la tabla '${tableName}': ${errorMessage}.` };
-    } else if (recentResult && recentResult.length > 0) {
-        const updateTimes = updatesResult ? updatesResult.map(u => u.fechahora) : [];
+        if (recentError) {
+            const tableName = 'update_30min';
+            if (isRLSError(recentError)) {
+                connectionError = { message: rlsHelpMessage(tableName) };
+            } else {
+                console.error(`Supabase error (${tableName}):`, recentError);
+                connectionError = { message: `Error al consultar la tabla '${tableName}': ${recentError.message}.` };
+            }
+        } else if (updatesError) {
+             const tableName = 'actualizaciones_panel';
+            if (isRLSError(updatesError)) {
+                connectionError = { message: rlsHelpMessage(tableName) };
+            } else {
+                console.error(`Supabase error (${tableName}):`, updatesError);
+                connectionError = { message: `Error al consultar la tabla '${tableName}': ${updatesError.message}.` };
+            }
+        } else if (recentResult && recentResult.length === 0) {
+            // No error, but no data, do nothing
+        } else if (updatesResult && updatesResult.length === 0 && !connectionError) {
+            connectionError = { message: "Conectado a Supabase, pero la tabla 'actualizaciones_panel' está vacía. La tarjeta 'Cambios Recientes' usará las fechas de 'update_30min'." };
+        }
         
-        recentConversions = recentResult.slice(0, 7).map((item, index, arr) => {
-            const currentValue = item.cierre;
-            const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
-            const change = currentValue - previousValue;
+        if (recentResult && recentResult.length > 0) {
+            const updateTimes = updatesResult ? updatesResult.map(u => u.fechahora) : [];
             
-            // Assign a corresponding update time, fallback to the original time if not available
-            const updateTime = updateTimes[index] || item.fechahora;
-            
-            return { id: item.fechahora, time: updateTime, value: currentValue, change };
-        });
+            recentConversions = recentResult.slice(0, 7).map((item, index, arr) => {
+                const currentValue = item.cierre;
+                const previousValue = arr[index + 1] ? arr[index + 1].cierre : currentValue;
+                const change = currentValue - previousValue;
+                
+                // Assign a corresponding update time, fallback to the original time if not available
+                const updateTime = updateTimes[index] || item.fechahora;
+                
+                return { id: item.fechahora, time: updateTime, value: currentValue, change };
+            });
+        }
     }
 
     // Fetch Annual Data from 'updateanual'
-    const { data: annualResult, error: annualError } = await supabase
-        .from('updateanual')
-        .select('fechahora, cierre')
-        .order('fechahora', { ascending: true });
+    if (!connectionError) {
+        const { data: annualResult, error: annualError } = await supabase
+            .from('updateanual')
+            .select('fechahora, cierre')
+            .order('fechahora', { ascending: true });
 
-    if (annualError && !isObjectEmpty(annualError)) {
-        connectionError = { message: rlsHelpMessage('updateanual') };
-    } else if (annualError) {
-        console.error("Supabase error (updateanual):", annualError);
-        connectionError = { message: `Error al consultar la tabla 'updateanual': ${annualError.message}.` };
-    } else if (annualResult && annualResult.length > 0) {
-        penToUsdData = annualResult.map(item => {
-            const dateObj = new Date(item.fechahora);
-            return {
-                date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
-                value: item.cierre,
-                fullDate: dateObj
-            };
-        });
+        if (annualError) {
+            const tableName = 'updateanual';
+            if (isRLSError(annualError)) {
+                connectionError = { message: rlsHelpMessage(tableName) };
+            } else {
+                console.error(`Supabase error (${tableName}):`, annualError);
+                connectionError = { message: `Error al consultar la tabla '${tableName}': ${annualError.message}.` };
+            }
+        } else if (annualResult && annualResult.length > 0) {
+            penToUsdData = annualResult.map(item => {
+                const dateObj = new Date(item.fechahora);
+                return {
+                    date: `${dateObj.getUTCDate()} ${dateObj.toLocaleDateString('es-PE', { month: 'short', timeZone: 'UTC' }).replace('.', '')}`,
+                    value: item.cierre,
+                    fullDate: dateObj
+                };
+            });
+        }
     }
-
   } else {
      connectionError = { message: "Las credenciales de Supabase no están configuradas o son inválidas. Por favor, revisa tu archivo .env.local. Mostrando datos de ejemplo." };
   }
@@ -439,5 +464,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    
