@@ -233,8 +233,8 @@ export default async function Home() {
         const tableName = recentError ? 'update_30min' : 'actualizaciones_panel';
         console.error(`Supabase error (${tableName}):`, errorMessage);
         connectionError = { message: `Error al consultar la tabla '${tableName}': ${errorMessage}.` };
-    } else if (recentResult && recentResult.length > 0 && updatesResult && updatesResult.length > 0) {
-        const updateTimes = updatesResult.map(u => u.fechahora);
+    } else if (recentResult && recentResult.length > 0) {
+        const updateTimes = updatesResult ? updatesResult.map(u => u.fechahora) : [];
         
         recentConversions = recentResult.slice(0, 7).map((item, index, arr) => {
             const currentValue = item.cierre;
@@ -439,3 +439,5 @@ export default async function Home() {
     </div>
   );
 }
+
+    
