@@ -389,7 +389,7 @@ export default async function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-4 font-headline">Tipos de Cambio por Banco</h2>
+            <h2 className="text-xl font-bold mb-4 font-headline">Tipos de Cambio por Banco</h2>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
               {banksData.length > 0 ? banksData.map((bank) => (
                 <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { day: 'numeric', month: 'numeric', year: 'numeric', timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
@@ -401,7 +401,7 @@ export default async function Home() {
           
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2">
-              <h2 className="text-2xl font-bold mb-4 font-headline">Evolución del Tipo de Cambio (USD a PEN)</h2>
+              <h2 className="text-xl font-bold mb-4 font-headline">Evolución del Tipo de Cambio (USD a PEN)</h2>
               <Card>
                 <CardContent className="pt-6">
                   <ExchangeRateChart data={sunatChartData} />
@@ -409,7 +409,7 @@ export default async function Home() {
               </Card>
             </div>
             <div>
-              <h2 className="text-2xl font-bold mb-4 font-headline">Tipo de Cambio - SUNAT</h2>
+              <h2 className="text-xl font-bold mb-4 font-headline">Tipo de Cambio - SUNAT</h2>
               <Card>
                 <CardContent className="p-2">
                   <ExchangeRateCalendar rates={sunatData} startDate={sunatStartDate} />
@@ -423,7 +423,7 @@ export default async function Home() {
             <div className="lg:col-span-2">
               <Card>
                   <CardHeader>
-                    <CardTitle className="font-headline">Histórico PEN/USD</CardTitle>
+                    <CardTitle className="font-headline text-xl">Histórico PEN/USD</CardTitle>
                     <CardDescription>
                         {latestPenToUsd > 0 ? 'Último valor registrado frente al día anterior.' : 'No hay datos suficientes para mostrar.'}
                     </CardDescription>
