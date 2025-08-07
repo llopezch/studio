@@ -145,7 +145,7 @@ export function ExchangeRateChart({ data }: ExchangeRateChartProps) {
 
   return (
     <Tabs defaultValue="week">
-      <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b border-card-foreground/10">
+      <TabsList className="bg-transparent p-0 justify-start h-auto rounded-none border-b border-muted-foreground/10">
         <TabsTrigger value="week" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Última Semana</TabsTrigger>
         <TabsTrigger value="month" className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary -mb-px">Último Mes</TabsTrigger>
       </TabsList>

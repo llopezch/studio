@@ -23,8 +23,8 @@ function RateChange({ value }: { value: number }) {
   return (
     <div className={cn(
       "flex items-center text-xs font-semibold gap-1 px-2 py-1 rounded-full",
-      isPositive && "bg-green-900/20 text-green-400",
-      isNegative && "bg-red-900/20 text-destructive"
+      isPositive && "bg-green-100 text-green-800",
+      isNegative && "bg-red-100 text-red-800"
     )}>
       <Icon className="h-3 w-3" />
       <span>{isPositive ? '+' : ''}{(value || 0).toFixed(3)}</span>

@@ -14,6 +14,8 @@ interface RecentChangesCardProps {
 const formatUpdateTime = (isoString: string): string => {
     try {
         const date = new Date(isoString);
+        // This function will run on the client, so it can use the browser's locale settings
+        // without causing a hydration mismatch, as long as it's done in a useEffect.
         return new Intl.DateTimeFormat('es-PE', {
             month: 'short',
             day: 'numeric',
@@ -64,7 +66,7 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
                                     )}
                                     <div className="ml-4 text-right">
                                         <p className="font-semibold text-foreground">{conv.value.toFixed(5)}</p>
-                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-900/20 text-green-400' : 'bg-destructive/20 text-destructive'}`}>
+                                        <div className={`text-xs font-mono px-2 py-1 rounded-md inline-block ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                             {isPositive ? '+' : ''}{(conv.change.toFixed(5))}
                                         </div>
                                     </div>

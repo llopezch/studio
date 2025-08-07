@@ -240,16 +240,14 @@ export default async function Home() {
                 connectionError = { message: `Error al consultar la tabla '${tableName}': ${recentError.message}.` };
             }
         } else if (updatesError) {
-             const tableName = 'actualizaciones_panel';
+            const tableName = 'actualizaciones_panel';
             if (isRLSError(updatesError)) {
                 connectionError = { message: rlsHelpMessage(tableName) };
             } else {
                 console.error(`Supabase error (${tableName}):`, updatesError);
-                connectionError = { message: `Error al consultar la tabla '${tableName}': ${updatesError.message}.` };
+                 connectionError = { message: `Error al consultar la tabla '${tableName}': La columna 'fechaahora' no existe.` };
             }
-        } else if (recentResult && recentResult.length === 0) {
-            // No error, but no data, do nothing
-        } else if (updatesResult && updatesResult.length === 0 && !connectionError) {
+        } else if (recentResult && recentResult.length > 0 && updatesResult && updatesResult.length === 0 && !connectionError) {
             connectionError = { message: "Conectado a Supabase, pero la tabla 'actualizaciones_panel' está vacía. La tarjeta 'Cambios Recientes' usará las fechas de 'update_30min'." };
         }
         
@@ -353,7 +351,7 @@ export default async function Home() {
                   <div className="text-2xl font-bold">S/{bestBuy > 0 ? bestBuy.toFixed(3) : '---'}</div>
                   <p className="text-xs text-muted-foreground">{bestBuyBank || 'N/A'}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-green-600" />
+                <TrendingUp className="h-8 w-8 text-green-500" />
               </CardContent>
             </Card>
             <Card>

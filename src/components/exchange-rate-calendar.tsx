@@ -21,18 +21,14 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   const [displayDate, setDisplayDate] = React.useState<Date | null>(null)
   const [rateType, setRateType] = React.useState<"buy" | "sell">("buy")
   
-  React.useEffect(() => {
-    const initialDate = new Date();
-    initialDate.setUTCHours(0, 0, 0, 0);
-    setDisplayDate(initialDate);
-  }, []);
-  
   const [todayKey, setTodayKey] = React.useState('');
 
   React.useEffect(() => {
     const limaDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
     limaDate.setHours(0, 0, 0, 0); 
-    setTodayKey(toDateKey(new Date(limaDate.getFullYear(), limaDate.getMonth(), limaDate.getDate())));
+    const initialDate = new Date(limaDate.getFullYear(), limaDate.getMonth(), limaDate.getDate());
+    setDisplayDate(initialDate);
+    setTodayKey(toDateKey(initialDate));
   }, []);
 
 
@@ -136,8 +132,8 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
                 "flex flex-col items-center justify-center h-12 rounded-md border text-sm relative",
                 isToday && "ring-2 ring-primary/50",
                 !hasData && "border-dashed",
-                hasData && rateType === 'buy' && "bg-green-900/10 border-green-800/20",
-                hasData && rateType === 'sell' && "bg-red-900/10 border-red-800/20"
+                hasData && rateType === 'buy' && "bg-green-100 border-green-200",
+                hasData && rateType === 'sell' && "bg-red-100 border-red-200"
               )}>
                 <div className={cn("font-semibold", !hasData && "text-muted-foreground")}>
                   {day}
@@ -145,7 +141,7 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
                 {hasData && (
                   <div className={cn(
                     "text-xs font-bold",
-                    rateType === 'buy' ? "text-green-400" : "text-destructive"
+                    rateType === 'buy' ? "text-green-800" : "text-red-800"
                   )}>
                     {rateData[rateType].toFixed(3)}
                   </div>
