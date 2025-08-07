@@ -14,8 +14,6 @@ interface RecentChangesCardProps {
 const formatUpdateTime = (isoString: string): string => {
     try {
         const date = new Date(isoString);
-        // This function will run on the client, so it can use the browser's locale settings
-        // without causing a hydration mismatch, as long as it's done in a useEffect.
         return new Intl.DateTimeFormat('es-PE', {
             month: 'short',
             day: 'numeric',
@@ -35,7 +33,6 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
     const [isClient, setIsClient] = React.useState(false);
 
     React.useEffect(() => {
-        // This effect runs only on the client, preventing a hydration mismatch.
         setIsClient(true);
         setFormattedConversions(conversions.map(conv => ({
             ...conv,
@@ -43,7 +40,7 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
         })));
     }, [conversions]);
 
-    const displayList = isClient ? formattedConversions : conversions;
+    const displayList = isClient ? formattedConversions : conversions.map(conv => ({ ...conv, time: '' }));
 
     return (
         <Card className="lg:col-span-1 flex flex-col">
