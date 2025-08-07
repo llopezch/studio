@@ -35,14 +35,17 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
     return (
         <div className="p-2">
             <div className="flex items-center justify-between mb-4">
-                <Skeleton className="h-6 w-32" />
+                 <div className="flex items-center gap-4">
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-16" />
+                </div>
                 <div className="flex items-center gap-2">
                     <Skeleton className="h-7 w-7" />
                     <Skeleton className="h-6 w-24" />
                     <Skeleton className="h-7 w-7" />
                 </div>
             </div>
-            <div className="grid grid-cols-7 text-center text-xs text-muted-foreground">
+            <div className="grid grid-cols-7 text-center text-xs text-muted-foreground mt-4">
                 <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
             </div>
             <div className="grid grid-cols-7 mt-2">
@@ -57,8 +60,9 @@ export function ExchangeRateCalendar({ rates, startDate }: ExchangeRateCalendarP
   }
 
   const todayInLima = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
-  todayInLima.setUTCHours(0, 0, 0, 0);
-  const todayKey = toDateKey(todayInLima);
+  todayInLima.setHours(0, 0, 0, 0); // Use setHours for local time adjustment
+  const todayKey = toDateKey(new Date(todayInLima.getFullYear(), todayInLima.getMonth(), todayInLima.getDate()));
+
 
   const monthName = displayDate.toLocaleString('es-PE', { month: 'long', timeZone: 'UTC' });
   const year = displayDate.getUTCFullYear();
