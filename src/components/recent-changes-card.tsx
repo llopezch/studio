@@ -35,11 +35,12 @@ export function RecentChangesCard({ conversions }: RecentChangesCardProps) {
     const [isClient, setIsClient] = React.useState(false);
 
     React.useEffect(() => {
+        // This effect runs only on the client, preventing a hydration mismatch.
+        setIsClient(true);
         setFormattedConversions(conversions.map(conv => ({
             ...conv,
             time: formatUpdateTime(conv.time)
         })));
-        setIsClient(true);
     }, [conversions]);
 
     const displayList = isClient ? formattedConversions : conversions;
