@@ -320,15 +320,15 @@ export default async function Home() {
 
   return (
     <div className="bg-background text-foreground min-h-screen w-full">
-      <header className="bg-[hsl(var(--header-background))] text-[hsl(var(--header-foreground))] py-8">
+      <header className="bg-header py-4 sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
               <div className="flex items-center text-sm mb-2 text-white">
-                <span className="font-semibold text-[hsl(var(--accent-green))]">INICIO</span>
+                <span className="font-semibold text-accent-green">INICIO</span>
                 <ChevronRight className="h-4 w-4 mx-1" />
                 <span className="font-semibold">PEN / USD • MONEDA</span>
               </div>
-              <h1 className="text-2xl font-bold font-headline text-white">Panel de Tipos de Cambio</h1>
+              <h1 className="text-xl font-bold font-headline text-white">Panel de Tipos de Cambio</h1>
           </div>
           <RefreshButton />
         </div>
@@ -464,5 +464,7 @@ export default async function Home() {
     </div>
   );
 }
+
+    
 
     

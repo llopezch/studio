@@ -11,11 +11,14 @@ export function RefreshButton() {
   return (
     <Button
       variant="outline"
-      className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-[hsl(var(--header-background))]"
+      size="sm"
+      className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-header"
       onClick={() => router.refresh()}
     >
-      <RefreshCw className="mr-2" />
+      <RefreshCw className="mr-1.5" />
       Actualizar
     </Button>
   );
 }
+
+    
