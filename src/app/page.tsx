@@ -244,8 +244,8 @@ export default async function Home() {
             if (isRLSError(updatesError)) {
                 connectionError = { message: rlsHelpMessage(tableName) };
             } else {
-                console.error(`Supabase error (${tableName}):`, updatesError);
-                 connectionError = { message: `Error al consultar la tabla '${tableName}': La columna 'fechaahora' no existe.` };
+                 console.error(`Supabase error (${tableName}):`, updatesError);
+                 connectionError = { message: `Error al consultar la tabla '${tableName}': La columna 'fechaahora' podría no existir o el RLS está activado.` };
             }
         } else if (recentResult && recentResult.length > 0 && updatesResult && updatesResult.length === 0 && !connectionError) {
             connectionError = { message: "Conectado a Supabase, pero la tabla 'actualizaciones_panel' está vacía. La tarjeta 'Cambios Recientes' usará las fechas de 'update_30min'." };
@@ -317,22 +317,24 @@ export default async function Home() {
 
   return (
     <div className="bg-background text-foreground min-h-screen w-full">
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <header className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
+      <header className="bg-[hsl(var(--header-background))] text-[hsl(var(--header-foreground))] py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-primary font-headline">Panel de Tipos de Cambio</h1>
-            <div className="flex items-center text-sm text-muted-foreground mt-1">
-              <span>INICIO</span>
-              <ChevronRight className="h-4 w-4 mx-1" />
-              <span className="font-semibold text-foreground">PEN / USD • MONEDA</span>
-            </div>
+              <div className="flex items-center text-sm mb-2">
+                <span className="font-semibold text-[hsl(var(--accent-green))]">INICIO</span>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <span className="font-semibold">PEN / USD • MONEDA</span>
+              </div>
+              <h1 className="text-3xl font-bold font-headline">Panel de Tipos de Cambio</h1>
           </div>
-          <Button variant="outline" className="w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-[hsl(var(--header-background))]">
             <RefreshCw className="mr-2" />
             Actualizar
           </Button>
-        </header>
+        </div>
+      </header>
 
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         <main className="space-y-8">
           {connectionError && (
             <Alert variant="destructive">
@@ -388,7 +390,7 @@ export default async function Home() {
 
           <section>
             <h2 className="text-2xl font-bold mb-4 font-headline">Tipos de Cambio por Banco</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
               {banksData.length > 0 ? banksData.map((bank) => (
                 <BankRateCard key={`${bank.name}-${bank.created_at}`} name={bank.name} date={new Date(bank.created_at + 'T00:00:00Z').toLocaleDateString('es-PE', { day: 'numeric', month: 'numeric', year: 'numeric', timeZone: 'UTC' })} buy={bank.buy} sell={bank.sell} buyChange={bank.buy_change} sellChange={bank.sell_change} logoUrl={bank.logo_url} />
               )) : (
@@ -462,5 +464,3 @@ export default async function Home() {
     </div>
   );
 }
-
-    

@@ -8,9 +8,13 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 220 13% 95%;
     --foreground: 222.2 84% 4.9%;
     
+    --header-background: 221 44% 18%;
+    --header-foreground: 0 0% 100%;
+    --accent-green: 142 76% 36%;
+
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     
